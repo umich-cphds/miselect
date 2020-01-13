@@ -2,3 +2,4 @@
 
 export(cv.galasso)
 export(galasso)
+export(waenet)
