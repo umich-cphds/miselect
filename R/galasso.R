@@ -1,17 +1,24 @@
-
+#' Multiple Imputation Grouped Adaptive LASSO
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
-#'     contain an intercept.
-#' @param y A list of \code{m} length n numeric response vectors.
-#' @param pf Penalty factor.
+#'     contain an intercept, or any missing values
+#' @param y A list of \code{m} length n numeric response vectors. No vector
+#'     should contain missing values
+#' @param pf Penalty factor. TODO
 #' @param adWeight TODO
-#' @param lambda TODO
-#' @param nlambda Length of the generated lambda sequence if 'lambda' was
-#'     not specified
+#' @param lambda Optional numeric vector of lambdas to fit. If NULL,
+#'    \code{galasso} will automatically generate a lambda sequence based off
+#'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
+#' @param nlambda Length of automatically generated 'lambda' sequence. If
+#'     lambda' is non NULL, 'nlambda' is ignored. Default is 100
+#' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
+#'     when automatically generating a 'lambda' sequence. If 'lambda' is not
+#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
+#' @return TODO
 #' @export
-galasso <- function(x, y, pf, adWeight, lambda = NULL, nlambda = 100,
-                    lambda.min.ratio = 1e-3, maxit = 1000, eps = 1e-5)
+galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
+                    lambda = NULL, maxit = 1000, eps = 1e-5)
 {
     if (!is.list(x))
         stop("'x' should be a list of numeric matrices.")
@@ -35,17 +42,31 @@ galasso <- function(x, y, pf, adWeight, lambda = NULL, nlambda = 100,
     if (any(sapply(y, function(y) !is.numeric(y) || !is.vector(y))))
             stop("Every 'y' should be a numeric vector.")
 
+    if (!is.numeric(nlambda) || length(nlambda) > 1 || nlambda < 1)
+        stop("'nlambda' should be an integer >= 1.")
+
+    if (!is.numeric(lambda.min.ratio) ||
+        length(lambda.min.ratio) > 1  ||
+        lambda.min.ratio < 0)
+        stop("'lambda.min.ratio' should be an number >= 0.")
+
+    if (!is.numeric(maxit) || length(maxit) > 1 || maxit < 1)
+        stop("'maxit' should be an integer >= 1.")
+
+    if (!is.numeric(eps) || length(eps) > 1 || eps <= 0)
+        stop("'eps' should be a postive number.")
+
     x <- lapply(x, function(x) scale(x))
 
-    v <- log(p * m) / log(n * m)
-    gamma <- ceiling(2 * v / (1 - v)) + 1
-    adWeight.power <- (gamma + 1) / 2
-
-    Y_X <- matrix(0, m, p)
-    for (i in 1:m)
-        Y_X[i,] <- t(y[[i]]) %*% x[[i]]
-
     if (is.null(lambda)) {
+        Y_X <- matrix(0, m, p)
+        for (i in 1:m)
+            Y_X[i,] <- t(y[[i]]) %*% x[[i]]
+
+        v <- log(p * m) / log(n * m)
+        gamma <- ceiling(2 * v / (1 - v)) + 1
+        adWeight.power <- (gamma + 1) / 2
+
         norm <- sqrt(apply(Y_X ^ 2, 2, sum))
         lambda.max <- max(pf * norm / (n * adWeight))
 
@@ -57,11 +78,17 @@ galasso <- function(x, y, pf, adWeight, lambda = NULL, nlambda = 100,
             lambda <- exp(seq(log(lambda.max * (n * D) ^ (-adWeight.power)),
                               log(lambda.max * (n * D) ^ (-0.5)),
                               length.out = nlambda))
+    } else {
+        if (!is.numeric(lambda) || !is.vector(lambda))
+            stop("'lambda' must be a numeric vector.")
+        if (any(lambda <= 0))
+            stop("every 'lambda' must be positive.")
+        nlambda <- length(lambda)
     }
 
     beta <- matrix(0, nlambda, p + 1)
-    dev <- rep(0, nlambda)
-    df <- rep(0, nlambda)
+    dev  <- rep(0, nlambda)
+    df   <- rep(0, nlambda)
     for (i in seq(nlambda)) {
         L <- lambda[i] * adWeight * pf
         fit <- fit.galasso.binomial(x, y, L, maxit, eps)

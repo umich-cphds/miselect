@@ -1,4 +1,4 @@
-#' Cross Validated Multiple Imputation Grouped Adaptive LASSO
+#' TODO
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
 #'     contain an intercept, or any missing values
 #' @param y A list of \code{m} length n numeric response vectors. No vector
@@ -18,9 +18,9 @@
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return TODO
 #' @export
-cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
-                       1e-3, lambda = NULL, nfolds = 10, foldid = NULL, maxit =
-                       1000, eps = 1e-5)
+cv.waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
+                      lambda.min.ratio = 1e-3, lambda = NULL, nfolds = 10,
+                      foldid = NULL, maxit = 1000, eps = 1e-5)
 {
 
     if (!is.numeric(nfolds) || length(nfolds) > 1)
@@ -30,11 +30,15 @@ cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
         if (!is.numeric(foldid) || length(foldid) != length(y[[1]]))
             stop("'nfolds' should a be single number.")
 
-
-    fit <- galasso(x, y, pf, adWeight, nlambda, lambda.min.ratio, lambda, maxit,
-                   eps)
+    fit <- waenet(x, y, pf, adWeight, weight, alpha, nlambda, lambda.min.ratio,
+                  lambda, maxit, eps)
 
     n <- length(y[[1]])
+    p <- ncol(x[[1]])
+    m <- length(x)
+
+    X <- do.call("rbind", x)
+    Y <- do.call("c", y)
 
     if (!is.null(foldid)) {
         stop("Not implemented")
@@ -43,32 +47,29 @@ cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
         q     <- (n - r) / nfolds
         folds <- c(rep(seq(nfolds), q), seq(r))
         folds <- sample(folds, n)
+        folds <- rep(folds, m)
     }
 
-    x.scaled <- lapply(x, scale)
-    m <- length(x)
+    lambda <- fit$lambda
+    X.scaled <- scale(X, scale = apply(X, 2, function(.X) sd(.X) * sqrt(m)))
     cvm  <- numeric(nlambda)
     cvsd <- numeric(nlambda)
     for (i in seq(nlambda)) {
-        L <- fit$lambda[i] * adWeight * pf
+        L2 <- lambda[i] * (1 - alpha) * pf
+        L1 <- lambda[i] * alpha * adWeight * pf
         cv.dev <- numeric(nfolds)
         for (j in seq(nfolds)) {
-            x.test  <- lapply(x, function(.x) .x[folds == j, , drop = F])
-            y.test  <- lapply(y, function(.y) .y[folds == j])
+            X.test  <- X[folds == j, , drop = F]
+            Y.test  <- Y[folds == j]
 
-            y.train <- lapply(y, function(.y) .y[folds != j])
-            x.train <- lapply(x.scaled, function(.x)
-                              subset_scaled_matrix(.x, folds != j))
+            Y.train <- Y[folds != j]
+            X.train <- subset_scaled_matrix(X.scaled, folds != j)
+            w <- weight[folds != j]
+            cv.fit <- fit.waenet.binomial(X.train, Y.train, length(w) / m, p, m,
+                                          w, L1, L2, maxit, eps)
 
-
-            cv.fit <- fit.galasso.binomial(x.train, y.train, L, maxit, eps)
-
-            dev <- rep(0, m)
-            for (k in seq(m)) {
-                eta <- x.test[[k]] %*% cv.fit$coef[-1, k] + cv.fit$coef[1, k]
-                dev[k] <- -2 * mean(y.test[[k]] * eta - log(1 + exp(eta)))
-            }
-            cv.dev[j] <- mean(dev)
+            eta <- X.test %*% cv.fit$coef[-1] + cv.fit$coef[1]
+            cv.dev[j] <- -2 * mean(Y.test * eta - log(1 + exp(eta)))
         }
         cvm[i]  <- mean(cv.dev)
         cvsd[i] <- sqrt(sum((cv.dev - cvm[i]) ^ 2) / nfolds)
@@ -81,5 +82,5 @@ cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
 
     structure(list(lambda = fit$lambda, cvm = cvm, cvsd = cvsd, galasso.fit =
                    fit, lambda.min = lambda.min, lambda.1se = lambda.1se, df =
-                   fit$df), class = "cv.galasso")
+                   fit$df), class = "cv.waenet")
 }

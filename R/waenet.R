@@ -1,15 +1,16 @@
 #' @export
-waenet <- function(x, y, pf, weight, adWeight, nlambda = 100,
-                   lambda.min.ratio = 1e-3, lambda = NULL, alpha = 1,
-                   maxit = 1000, eps = 1e-5)
+waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
+                   lambda.min.ratio = 1e-3, lambda = NULL, maxit = 1000,
+                   eps = 1e-5)
 {
     if (!is.list(x))
         stop("'x' should be a list of numeric matrices.")
     if (any(sapply(x, function(.x) !is.matrix(.x) || !is.numeric(.x))))
         stop("Every 'x' should be a numeric matrix.")
 
-    n <- nrow(x[[1]])
-    p <- ncol(x[[1]])
+    dim <- dim(x[[1]])
+    n <- dim[1]
+    p <- dim[2]
     m <- length(x)
 
     if (any(sapply(x, function(.x) any(dim(x) != dim))))
@@ -24,18 +25,32 @@ waenet <- function(x, y, pf, weight, adWeight, nlambda = 100,
     if (any(sapply(y, function(y) !is.numeric(y) || !is.vector(y))))
             stop("Every 'y' should be a numeric vector.")
 
+    if (!is.numeric(nlambda) || length(nlambda) > 1 || nlambda < 1)
+        stop("'nlambda' should be an integer >= 1.")
+
+    if (!is.numeric(lambda.min.ratio) ||
+        length(lambda.min.ratio) > 1  ||
+        lambda.min.ratio < 0)
+        stop("'lambda.min.ratio' should be an number >= 0.")
+
+    if (!is.numeric(maxit) || length(maxit) > 1 || maxit < 1)
+        stop("'maxit' should be an integer >= 1.")
+
+    if (!is.numeric(eps) || length(eps) > 1 || eps <= 0)
+        stop("'eps' should be a postive number.")
+
     X <- do.call("rbind", x)
     Y <- do.call("c", y)
+
     X <- scale(X, scale = apply(X, 2, function(.X) sd(.X) * sqrt(m)))
-
-    v <- log(p) / log(n * m)
-    gamma <- ceiling(2 * v / (1 - v)) + 1
-    adWeight.power <- (gamma + 1) / 2
-
     # adaptive ENet update
     if (is.null(lambda)) {
-        wY_X <- t(Y * weight) %*% X / (n * adWeight * alpha) * pf
+        wY_X <- (t(Y * weight) %*% X) / (n * adWeight * alpha) * pf
         lambda.max <- max(abs(wY_X))
+
+        v <- log(p) / log(n * m)
+        gamma <- ceiling(2 * v / (1 - v)) + 1
+        adWeight.power <- (gamma + 1) / 2
 
         if (all(adWeight == rep(1, p)))
             lambda <- exp(seq(log(lambda.max),
@@ -45,18 +60,24 @@ waenet <- function(x, y, pf, weight, adWeight, nlambda = 100,
             lambda <- exp(seq(log(lambda.max * (n * D) ^ (-adWeight.power)),
                               log(lambda.max * (n * D) ^ (-0.5)),
                               length.out = nlambda))
+    } else {
+        if (!is.numeric(lambda) || !is.vector(lambda))
+            stop("'lambda' must be a numeric vector.")
+        if (any(lambda <= 0))
+            stop("every 'lambda' must be positive.")
+        nlambda <- length(lambda)
     }
 
     df   <- numeric(nlambda)
     dev  <- numeric(nlambda)
     beta <- matrix(0, nlambda, p + 1)
+
     for (i in seq(nlambda)) {
         L2 <- lambda[i] * (1 - alpha) * pf
         L1 <- lambda[i] * alpha * adWeight * pf
-
         fit <- fit.waenet.binomial(X, Y, n, p, m, weight, L1, L2, maxit, eps)
         beta[i, ] <- fit$coef
-        dev[i] <- fit$dev[i]
+        dev[i] <- fit$dev
         df[i] <- sum(beta[i,] != 0)
     }
     structure(list(beta = beta, dev = dev, lambda = lambda, df = df),
@@ -89,7 +110,6 @@ fit.waenet.binomial <- function(X, Y, n, p, m, weight, L1, L2, maxit, eps)
         hessian <- pi * (1 - pi)
         hessian[hessian <= 1e-5] <- 1e-5
         res <- (Y - pi) / hessian
-
         # update beta0
         z2 <- sum(weight * hessian)
         z1 <- sum(weight * hessian * res)
@@ -112,7 +132,7 @@ fit.waenet.binomial <- function(X, Y, n, p, m, weight, L1, L2, maxit, eps)
     sd <- attr(X, "scaled:scale")
     # transform back into scale
     coef <- rep(0, p + 1)
-    coef[1]  <- beta0 - sum(mu / sd * beta.naive) # intercept
+    coef[1]  <- beta0 - sum(mu / sd * beta) # intercept
     coef[-1] <- beta / sd
 
     eta <- X %*% beta + beta0
