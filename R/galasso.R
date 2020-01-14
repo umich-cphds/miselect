@@ -75,9 +75,9 @@ galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
                               log(lambda.max * lambda.min.ratio),
                               length.out = nlambda))
         else
-            lambda <- exp(seq(log(lambda.max * (n * D) ^ (-adWeight.power)),
-                              log(lambda.max * (n * D) ^ (-0.5)),
-                              length.out = nlambda))
+            lambda <- exp(seq(log(lambda.max)),
+                              log(lambda.max * lambda.min.ratio / 100),
+                              length.out = nlambda)
     } else {
         if (!is.numeric(lambda) || !is.vector(lambda))
             stop("'lambda' must be a numeric vector.")

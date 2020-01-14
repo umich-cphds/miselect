@@ -19,7 +19,7 @@
 #' @return TODO
 #' @export
 cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
-                       1e-3, lambda = NULL, nfolds = 10, foldid = NULL, maxit =
+                       1e-4, lambda = NULL, nfolds = 10, foldid = NULL, maxit =
                        1000, eps = 1e-5)
 {
 
@@ -48,7 +48,7 @@ cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
     x.scaled <- lapply(x, scale)
     m <- length(x)
     cvm  <- numeric(nlambda)
-    cvsd <- numeric(nlambda)
+    cvse <- numeric(nlambda)
     for (i in seq(nlambda)) {
         L <- fit$lambda[i] * adWeight * pf
         cv.dev <- numeric(nfolds)
@@ -71,15 +71,15 @@ cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
             cv.dev[j] <- mean(dev)
         }
         cvm[i]  <- mean(cv.dev)
-        cvsd[i] <- sqrt(sum((cv.dev - cvm[i]) ^ 2) / nfolds)
+        cvse[i] <- sd(cv.dev) / sqrt(nfolds)
     }
     i <- which.min(cvm)
     lambda.min <- fit$lambda[i]
-    j <- which((abs(cvm - cvm[i]) < cvsd[i]))
+    j <- which((abs(cvm - cvm[i]) < cvse[i]))
     i <- which.min(fit$df[j])
     lambda.1se <- fit$lambda[j][i]
 
-    structure(list(lambda = fit$lambda, cvm = cvm, cvsd = cvsd, galasso.fit =
+    structure(list(lambda = fit$lambda, cvm = cvm, cvse = cvse, galasso.fit =
                    fit, lambda.min = lambda.min, lambda.1se = lambda.1se, df =
                    fit$df), class = "cv.galasso")
 }
