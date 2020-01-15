@@ -45,14 +45,14 @@ cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
         folds <- sample(folds, n)
     }
 
-    x.scaled <- lapply(x, scale)
     m <- length(x)
-    cvm  <- numeric(nlambda)
+    p <- ncol(x[[1]])
+    x.scaled <- lapply(x, scale)
+    cvm  <- matrix(0, nlambda, nfolds)
     cvse <- numeric(nlambda)
-    for (i in seq(nlambda)) {
-        L <- fit$lambda[i] * adWeight * pf
-        cv.dev <- numeric(nfolds)
-        for (j in seq(nfolds)) {
+
+    for (j in seq(nfolds)) {
+
             x.test  <- lapply(x, function(.x) .x[folds == j, , drop = F])
             y.test  <- lapply(y, function(.y) .y[folds == j])
 
@@ -60,19 +60,23 @@ cv.galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio =
             x.train <- lapply(x.scaled, function(.x)
                               subset_scaled_matrix(.x, folds != j))
 
+        start  <- matrix(1, p + 1, m)
+        for (i in seq(nlambda)) {
+            L <- fit$lambda[i] * adWeight * pf
+            cv.fit <- fit.galasso.binomial(x.train, y.train, start, L, maxit, eps)
 
-            cv.fit <- fit.galasso.binomial(x.train, y.train, L, maxit, eps)
-
+            start <- cv.fit$coef
             dev <- rep(0, m)
             for (k in seq(m)) {
                 eta <- x.test[[k]] %*% cv.fit$coef[-1, k] + cv.fit$coef[1, k]
                 dev[k] <- -2 * mean(y.test[[k]] * eta - log(1 + exp(eta)))
+                cvm[i, j] <- mean(dev)
             }
-            cv.dev[j] <- mean(dev)
         }
-        cvm[i]  <- mean(cv.dev)
-        cvse[i] <- sd(cv.dev) / sqrt(nfolds)
     }
+    cvse <- apply(cvm, 1, sd) / sqrt(nfolds)
+    cvm  <- rowMeans(cvm)
+
     i <- which.min(cvm)
     lambda.min <- fit$lambda[i]
     j <- which((abs(cvm - cvm[i]) < cvse[i]))

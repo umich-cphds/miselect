@@ -89,10 +89,12 @@ galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
     beta <- matrix(0, nlambda, p + 1)
     dev  <- rep(0, nlambda)
     df   <- rep(0, nlambda)
+    start  <- matrix(0, p + 1, m)
     for (i in seq(nlambda)) {
         L <- lambda[i] * adWeight * pf
-        fit <- fit.galasso.binomial(x, y, L, maxit, eps)
+        fit <- fit.galasso.binomial(x, y, start, L, maxit, eps)
 
+        start <- fit$coef
         dev[i]   <- mean(fit$dev)
         beta[i,] <- rowMeans(fit$coef)
         df[i]    <- sum(beta[i,] != 0)
@@ -104,15 +106,15 @@ galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
 }
 
 
-fit.galasso.binomial <- function(x, y, L, maxit, eps)
+fit.galasso.binomial <- function(x, y, start, L, maxit, eps)
 {
 
     n <- nrow(x[[1]])
     p <- ncol(x[[1]])
     m <- length(x)
 
-    beta  <- matrix(1, p, m)
-    beta0 <- rep(1, m)
+    beta  <- start[-1,]
+    beta0 <- start[1,]
 
     eta <- matrix(0, n, m)
     pi  <- matrix(0, n, m)
@@ -164,17 +166,7 @@ fit.galasso.binomial <- function(x, y, L, maxit, eps)
         comp.set <- which(beta[, 1] != 0)
     }
     if (max(abs(beta - beta.old)) >= eps)
-        warning("gaenet did not converge.", max(abs(beta - beta.old)))
-
-    # tranform back into scale
-    coef.naive <- matrix(NA, p + 1, m)
-    for (i in 1:m) {
-        mu <- attr(x[[i]], "scaled:center")
-        sd <- attr(x[[i]], "scaled:scale")
-
-        coef.naive[1, i] <- beta0[i] - sum(mu / sd * beta[, i])
-        coef.naive[-1, i] <- beta[, i] / sd
-    }
+        warning("gaenet did not converge: delta = ", max(abs(beta - beta.old)))
 
     # tranform back into scale
     coef <- matrix(NA, p + 1, m)
@@ -193,5 +185,5 @@ fit.galasso.binomial <- function(x, y, L, maxit, eps)
         dev[i] <- -2 * mean(y[[i]] * eta - log(1 + exp(eta)))
     }
 
-    list(coef.naive = coef.naive, coef = coef, dev = dev)
+    list(coef = coef, dev = dev)
 }

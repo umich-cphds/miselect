@@ -1,5 +1,5 @@
 #' @export
-waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
+waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
                    lambda.min.ratio = 1e-3, lambda = NULL, maxit = 1000,
                    eps = 1e-5)
 {
@@ -25,6 +25,12 @@ waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
     if (any(sapply(y, function(y) !is.numeric(y) || !is.vector(y))))
             stop("Every 'y' should be a numeric vector.")
 
+    if (class(mids) != "mids")
+        stop("'mids' is not a mice 'mids' object.")
+
+    weight <- (1 - rowMeans(mids$where))
+    weight <- rep(weight / m, m)
+
     if (!is.numeric(nlambda) || length(nlambda) > 1 || nlambda < 1)
         stop("'nlambda' should be an integer >= 1.")
 
@@ -43,7 +49,7 @@ waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
     Y <- do.call("c", y)
 
     X <- scale(X, scale = apply(X, 2, function(.X) sd(.X) * sqrt(m)))
-    # adaptive ENet update
+
     if (is.null(lambda)) {
         wY_X <- (t(Y * weight) %*% X) / (n * adWeight * alpha) * pf
         lambda.max <- max(abs(wY_X))
@@ -74,14 +80,14 @@ waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
 
     for (i in seq(nlambda)) {
         L2 <- lambda[i] * (1 - alpha) * pf
+
         L1 <- lambda[i] * alpha * adWeight * pf
         fit <- fit.waenet.binomial(X, Y, n, p, m, weight, L1, L2, maxit, eps)
         beta[i, ] <- fit$coef
-        dev[i] <- fit$dev
-        df[i] <- sum(beta[i,] != 0)
+        dev[i]    <- fit$dev
+        df[i]     <- sum(beta[i,] != 0)
     }
-    structure(list(beta = beta, dev = dev, lambda = lambda, df = df),
-              class = "waenet")
+    structure(list(beta = beta, dev = dev, lambda = lambda, df = df), class = "waenet")
 }
 
 fit.waenet.binomial <- function(X, Y, n, p, m, weight, L1, L2, maxit, eps)
@@ -136,6 +142,6 @@ fit.waenet.binomial <- function(X, Y, n, p, m, weight, L1, L2, maxit, eps)
     coef[-1] <- beta / sd
 
     eta <- X %*% beta + beta0
-    dev <- -2 * mean(Y * eta - log(1 + exp(eta)))
+    dev <- -2 * m * mean(weight * (Y * eta - log(1 + exp(eta))))
     list(coef = coef, dev = dev)
 }

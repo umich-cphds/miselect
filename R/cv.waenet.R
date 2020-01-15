@@ -13,12 +13,12 @@
 #' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
 #'     when automatically generating a 'lambda' sequence. If 'lambda' is not
 #'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
-#' @param nfolds Number of folds to use for cross validation. Default is 10
+#' @param nfolds Number of foldid to use for cross validation. Default is 10
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return TODO
 #' @export
-cv.waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
+cv.waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
                       lambda.min.ratio = 1e-3, lambda = NULL, nfolds = 10,
                       foldid = NULL, maxit = 1000, eps = 1e-5)
 {
@@ -30,7 +30,7 @@ cv.waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
         if (!is.numeric(foldid) || length(foldid) != length(y[[1]]))
             stop("'nfolds' should a be single number.")
 
-    fit <- waenet(x, y, pf, adWeight, weight, alpha, nlambda, lambda.min.ratio,
+    fit <- waenet(x, y, pf, adWeight, mids, alpha, nlambda, lambda.min.ratio,
                   lambda, maxit, eps)
 
     n <- length(y[[1]])
@@ -40,47 +40,54 @@ cv.waenet <- function(x, y, pf, adWeight, weight, alpha = 1, nlambda = 100,
     X <- do.call("rbind", x)
     Y <- do.call("c", y)
 
+    weight <- (1 - rowMeans(mids$where))
+    weight <- rep(weight / m , m)
+
     if (!is.null(foldid)) {
         stop("Not implemented")
     } else {
         r     <- n %% nfolds
         q     <- (n - r) / nfolds
-        folds <- c(rep(seq(nfolds), q), seq(r))
-        folds <- sample(folds, n)
-        folds <- rep(folds, m)
+        foldid <- c(rep(seq(nfolds), q), seq(r))
+        foldid <- sample(foldid, n)
+        foldid <- rep(foldid, m)
     }
 
     lambda <- fit$lambda
     X.scaled <- scale(X, scale = apply(X, 2, function(.X) sd(.X) * sqrt(m)))
     cvm  <- numeric(nlambda)
-    cvsd <- numeric(nlambda)
+    cvse <- numeric(nlambda)
     for (i in seq(nlambda)) {
         L2 <- lambda[i] * (1 - alpha) * pf
         L1 <- lambda[i] * alpha * adWeight * pf
         cv.dev <- numeric(nfolds)
         for (j in seq(nfolds)) {
-            X.test  <- X[folds == j, , drop = F]
-            Y.test  <- Y[folds == j]
+            Y.train <- Y[foldid != j]
+            X.train <- subset_scaled_matrix(X.scaled, foldid != j)
+            w.train <- weight[foldid != j]
 
-            Y.train <- Y[folds != j]
-            X.train <- subset_scaled_matrix(X.scaled, folds != j)
-            w <- weight[folds != j]
-            cv.fit <- fit.waenet.binomial(X.train, Y.train, length(w) / m, p, m,
-                                          w, L1, L2, maxit, eps)
+            X.test  <- X[foldid == j, , drop = F]
+            Y.test  <- Y[foldid == j]
+            w.test <- weight[foldid == j]
+
+            cv.fit <- fit.waenet.binomial(X.train, Y.train, length(w.train) / m,
+                                          p, m, w.train, L1, L2, maxit, eps)
 
             eta <- X.test %*% cv.fit$coef[-1] + cv.fit$coef[1]
-            cv.dev[j] <- -2 * mean(Y.test * eta - log(1 + exp(eta)))
+            loglik <- mean(w.test * (Y.test * eta - log(1 + exp(eta))))
+            cv.dev[j] <- -2 * m * loglik
         }
         cvm[i]  <- mean(cv.dev)
-        cvsd[i] <- sqrt(sum((cv.dev - cvm[i]) ^ 2) / nfolds)
+        cvse[i] <- sd(cv.dev) / sqrt(nfolds)
     }
+
     i <- which.min(cvm)
     lambda.min <- fit$lambda[i]
-    j <- which((abs(cvm - cvm[i]) < cvsd[i]))
+    j <- which((abs(cvm - cvm[i]) < cvse[i]))
     i <- which.min(fit$df[j])
     lambda.1se <- fit$lambda[j][i]
 
-    structure(list(lambda = fit$lambda, cvm = cvm, cvsd = cvsd, galasso.fit =
+    structure(list(lambda = fit$lambda, cvm = cvm, cvse = cvse, galasso.fit =
                    fit, lambda.min = lambda.min, lambda.1se = lambda.1se, df =
                    fit$df), class = "cv.waenet")
 }
