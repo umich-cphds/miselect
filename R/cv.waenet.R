@@ -55,39 +55,53 @@ cv.waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
 
     lambda <- fit$lambda
     X.scaled <- scale(X, scale = apply(X, 2, function(.X) sd(.X) * sqrt(m)))
-    cvm  <- numeric(nlambda)
-    cvse <- numeric(nlambda)
-    for (i in seq(nlambda)) {
-        L2 <- lambda[i] * (1 - alpha) * pf
-        L1 <- lambda[i] * alpha * adWeight * pf
-        cv.dev <- numeric(nfolds)
-        for (j in seq(nfolds)) {
-            Y.train <- Y[foldid != j]
-            X.train <- subset_scaled_matrix(X.scaled, foldid != j)
-            w.train <- weight[foldid != j]
 
-            X.test  <- X[foldid == j, , drop = F]
-            Y.test  <- Y[foldid == j]
-            w.test <- weight[foldid == j]
+    cvm  <- array(0, c(nfolds, length(alpha), nlambda))
+    cvse <- matrix(nlambda, alpha)
+    for (j in seq(nfolds)) {
+        Y.train <- Y[foldid != j]
+        X.train <- subset_scaled_matrix(X.scaled, foldid != j)
+        w.train <- weight[foldid != j]
 
-            cv.fit <- fit.waenet.binomial(X.train, Y.train, length(w.train) / m,
-                                          p, m, w.train, L1, L2, maxit, eps)
+        X.test  <- X[foldid == j, , drop = F]
+        Y.test  <- Y[foldid == j]
+        w.test <- weight[foldid == j]
+        for (k in seq(alpha)) {
+            for (i in seq(nlambda)) {
+                L2 <- lambda[i] * (1 - alpha[k]) * pf
+                L1 <- lambda[i] * alpha[k] * adWeight * pf
 
-            eta <- X.test %*% cv.fit$coef[-1] + cv.fit$coef[1]
-            loglik <- mean(w.test * (Y.test * eta - log(1 + exp(eta))))
-            cv.dev[j] <- -2 * m * loglik
+                cv.fit <- fit.waenet.binomial(X.train, Y.train,
+                                              length(w.train) / m, p, m,
+                                              w.train, L1, L2, maxit, eps)
+
+                eta <- X.test %*% cv.fit$coef[-1] + cv.fit$coef[1]
+                loglik <- mean(w.test * (Y.test * eta - log(1 + exp(eta))))
+                cvm[j, k, i] <- -2 * m * loglik
+            }
         }
-        cvm[i]  <- mean(cv.dev)
-        cvse[i] <- sd(cv.dev) / sqrt(nfolds)
     }
-
+    cvse <- apply(cvm, c(3, 2), sd) / sqrt(nfolds)
+    cvm <- apply(cvm, c(3, 2), mean)
     i <- which.min(cvm)
-    lambda.min <- fit$lambda[i]
-    j <- which((abs(cvm - cvm[i]) < cvse[i]))
+
+    i1 <- i %% nlambda
+    i2 <- (i - i1) /  nlambda + 1
+
+    lambda.min <- fit$lambda[i1]
+    alpha.min <- fit$alpha[i2]
+
+    j <- which((abs(cvm - min(cvm)) < cvse[i1, i2]))
+
     i <- which.min(fit$df[j])
-    lambda.1se <- fit$lambda[j][i]
+    i1 <- i %% nlambda
+    i2 <- (i - i1) /  nlambda + 1
+
+    lambda.1se <- fit$lambda[j][i1]
+    lambda.1se <- fit$alpha[j][i2]
 
     structure(list(lambda = fit$lambda, cvm = cvm, cvse = cvse, galasso.fit =
-                   fit, lambda.min = lambda.min, lambda.1se = lambda.1se, df =
+                   fit, lambda.min = lambda.min, alpha.min = alpha.min,
+                   lambda.1se = lambda.1se, df =
                    fit$df), class = "cv.waenet")
 }

@@ -54,18 +54,14 @@ waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
         wY_X <- (t(Y * weight) %*% X) / (n * adWeight * alpha) * pf
         lambda.max <- max(abs(wY_X))
 
-        v <- log(p) / log(n * m)
-        gamma <- ceiling(2 * v / (1 - v)) + 1
-        adWeight.power <- (gamma + 1) / 2
-
         if (all(adWeight == rep(1, p)))
             lambda <- exp(seq(log(lambda.max),
                               log(lambda.max * lambda.min.ratio),
                               length.out = nlambda))
         else
-            lambda <- exp(seq(log(lambda.max * (n * D) ^ (-adWeight.power)),
-                              log(lambda.max * (n * D) ^ (-0.5)),
-                              length.out = nlambda))
+            lambda <- exp(seq(log(lambda.max),
+                          log(lambda.max * lambda.min.ratio / 100),
+                          length.out = nlambda))
     } else {
         if (!is.numeric(lambda) || !is.vector(lambda))
             stop("'lambda' must be a numeric vector.")
@@ -74,18 +70,19 @@ waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
         nlambda <- length(lambda)
     }
 
-    df   <- numeric(nlambda)
-    dev  <- numeric(nlambda)
-    beta <- matrix(0, nlambda, p + 1)
+    df   <- matrix(0, nlambda, length(alpha))
+    dev  <- matrix(0, nlambda, length(alpha))
+    beta <- array(0, c(nlambda, length(alpha), p + 1))
+    for (j in seq(alpha)) {
 
     for (i in seq(nlambda)) {
-        L2 <- lambda[i] * (1 - alpha) * pf
-
-        L1 <- lambda[i] * alpha * adWeight * pf
-        fit <- fit.waenet.binomial(X, Y, n, p, m, weight, L1, L2, maxit, eps)
-        beta[i, ] <- fit$coef
-        dev[i]    <- fit$dev
-        df[i]     <- sum(beta[i,] != 0)
+            L2 <- lambda[i] * (1 - alpha[j]) * pf
+            L1 <- lambda[i] * alpha[j] * adWeight * pf
+            fit <- fit.waenet.binomial(X, Y, n, p, m, weight, L1, L2, maxit, eps)
+            beta[i, j, ] <- fit$coef
+            dev[i, j]    <- fit$dev
+            df[i, j]     <- sum(beta[i, j,] != 0)
+        }
     }
     structure(list(beta = beta, dev = dev, lambda = lambda, df = df), class = "waenet")
 }
