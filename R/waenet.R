@@ -51,7 +51,7 @@ waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
     X <- scale(X, scale = apply(X, 2, function(.X) sd(.X) * sqrt(m)))
 
     if (is.null(lambda)) {
-        wY_X <- (t(Y * weight) %*% X) / (n * adWeight * alpha) * pf
+        wY_X <- (t(Y * weight) %*% X) / (n * adWeight * mean(alpha)) * pf
         lambda.max <- max(abs(wY_X))
 
         if (all(adWeight == rep(1, p)))
@@ -73,7 +73,7 @@ waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
     df   <- matrix(0, nlambda, length(alpha))
     dev  <- matrix(0, nlambda, length(alpha))
     beta <- array(0, c(nlambda, length(alpha), p + 1))
-    for (j in seq(alpha)) {
+    for (j in seq(length(alpha))) {
 
     for (i in seq(nlambda)) {
             L2 <- lambda[i] * (1 - alpha[j]) * pf
@@ -84,7 +84,8 @@ waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
             df[i, j]     <- sum(beta[i, j,] != 0)
         }
     }
-    structure(list(beta = beta, dev = dev, lambda = lambda, df = df), class = "waenet")
+    structure(list(beta = beta, dev = dev, lambda = lambda, alpha = alpha,
+              df = df), class = "waenet")
 }
 
 fit.waenet.binomial <- function(X, Y, n, p, m, weight, L1, L2, maxit, eps)

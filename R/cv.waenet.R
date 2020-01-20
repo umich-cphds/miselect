@@ -1,4 +1,5 @@
-#' TODO
+#' Observation Weighted Adaptive Elastic Net
+#'
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
 #'     contain an intercept, or any missing values
 #' @param y A list of \code{m} length n numeric response vectors. No vector
@@ -52,12 +53,11 @@ cv.waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
         foldid <- sample(foldid, n)
         foldid <- rep(foldid, m)
     }
-
     lambda <- fit$lambda
     X.scaled <- scale(X, scale = apply(X, 2, function(.X) sd(.X) * sqrt(m)))
 
     cvm  <- array(0, c(nfolds, length(alpha), nlambda))
-    cvse <- matrix(nlambda, alpha)
+    cvse <- matrix(nlambda, length(alpha))
     for (j in seq(nfolds)) {
         Y.train <- Y[foldid != j]
         X.train <- subset_scaled_matrix(X.scaled, foldid != j)
@@ -66,7 +66,7 @@ cv.waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
         X.test  <- X[foldid == j, , drop = F]
         Y.test  <- Y[foldid == j]
         w.test <- weight[foldid == j]
-        for (k in seq(alpha)) {
+        for (k in seq(length(alpha))) {
             for (i in seq(nlambda)) {
                 L2 <- lambda[i] * (1 - alpha[k]) * pf
                 L1 <- lambda[i] * alpha[k] * adWeight * pf
@@ -85,23 +85,25 @@ cv.waenet <- function(x, y, pf, adWeight, mids, alpha = 1, nlambda = 100,
     cvm <- apply(cvm, c(3, 2), mean)
     i <- which.min(cvm)
 
-    i1 <- i %% nlambda
-    i2 <- (i - i1) /  nlambda + 1
+    row <- (i - 1) %% nlambda + 1
 
-    lambda.min <- fit$lambda[i1]
-    alpha.min <- fit$alpha[i2]
+    col <- (i - 1) %/% nlambda + 1
 
-    j <- which((abs(cvm - min(cvm)) < cvse[i1, i2]))
+    lambda.min <- fit$lambda[row]
+    alpha.min  <- alpha[col]
 
-    i <- which.min(fit$df[j])
-    i1 <- i %% nlambda
-    i2 <- (i - i1) /  nlambda + 1
+    j <- abs(cvm - min(cvm)) < cvse[i]
+    # Inf could cause NaN if df = 0
+    i <- which.min(fit$df * ifelse(j, 1, 1e9))
 
-    lambda.1se <- fit$lambda[j][i1]
-    lambda.1se <- fit$alpha[j][i2]
+    row <- (i - 1) %% nlambda + 1
+    col <- (i - 1) %/% nlambda + 1
 
-    structure(list(lambda = fit$lambda, cvm = cvm, cvse = cvse, galasso.fit =
+    lambda.1se <- fit$lambda[row]
+    alpha.1se  <- alpha[col]
+
+    structure(list(lambda = fit$lambda, cvm = cvm, cvse = cvse, waenet.fit =
                    fit, lambda.min = lambda.min, alpha.min = alpha.min,
-                   lambda.1se = lambda.1se, df =
-                   fit$df), class = "cv.waenet")
+                   lambda.1se = lambda.1se, alpha.1se = alpha.1se,
+                   df = fit$df), class = "cv.waenet")
 }
