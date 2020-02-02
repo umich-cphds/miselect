@@ -1,10 +1,18 @@
 #' Multiple Imputation Grouped Adaptive LASSO
+#'
+#' Fits an adaptive LASSO for multiply imputed data. The group penalty ensures
+#' that each imputation selects the same betas at each value of lambda.
+#' "galasso" supports both continuous and binary responses.
+#'
+#' TODO
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
 #'     contain an intercept, or any missing values
 #' @param y A list of \code{m} length n numeric response vectors. No vector
 #'     should contain missing values
-#' @param pf Penalty factor. TODO
-#' @param adWeight TODO
+#' @param adWeight Numeric vector of length p representing the adaptive weights
+#'     for the L1 penalty
+#' @param family The type of response. "gaussian" implies a continuous response
+#'     and "binomial" implies a binary response. Default is "gaussian".
 #' @param lambda Optional numeric vector of lambdas to fit. If NULL,
 #'    \code{galasso} will automatically generate a lambda sequence based off
 #'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
@@ -15,10 +23,29 @@
 #'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
-#' @return TODO
+#' @return
+#' An object with type "galasso" and subtype
+#' "galasso.gaussian" or galasso.binomial", depending on which family was used.
+#' Both subtypes have 4 elements:
+#' \describe{
+#' \item{lambda}{Sequence of lambda fit.}
+#' \item{beta}{p + 1 x nlambda matrix representing the estimated betas at
+#'             each value of lambda. The betas are constructed as the average
+#'             of the betas from each imputation.}
+#' \item{df}{Number of nonzero betas at each value of lambda.}
+#' \item{mse}{For objects with subtype "galasso.gaussian", the training MSE for
+#'            each value of lambda.}
+#' \item{dev}{For objects with subtype "galasso.binomial", the training deviance
+#'            for each value of lambda.}
+#' }
+#' @examples
+#' # TODO
+#' @references
+#' TODO
 #' @export
-galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
-                    lambda = NULL, maxit = 1000, eps = 1e-5)
+galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
+                    nlambda = 100, lambda.min.ratio = 1e-3, lambda = NULL,
+                    maxit = 1000, eps = 1e-5)
 {
     if (!is.list(x))
         stop("'x' should be a list of numeric matrices.")
@@ -39,16 +66,21 @@ galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
         stop("'y' should should have the same length as 'x'.")
     if (any(sapply(y, function(y) !is.numeric(y) || !is.vector(y))))
         stop("Every 'y' should be a numeric vector.")
-    if (any(sapply(y, function(y) !is.numeric(y) || !is.vector(y))))
-            stop("Every 'y' should be a numeric vector.")
+
+    if (!is.numeric(adWeight) || !is.vector(adWeight) ||
+        length(adWeight) != p || any(adWeight < 0))
+    {
+        stop("'adWeight' should be a non negative vector of length p.")
+    }
 
     if (!is.numeric(nlambda) || length(nlambda) > 1 || nlambda < 1)
         stop("'nlambda' should be an integer >= 1.")
 
-    if (!is.numeric(lambda.min.ratio) ||
-        length(lambda.min.ratio) > 1  ||
+    if (!is.numeric(lambda.min.ratio) || length(lambda.min.ratio) > 1  ||
         lambda.min.ratio < 0)
+    {
         stop("'lambda.min.ratio' should be an number >= 0.")
+    }
 
     if (!is.numeric(maxit) || length(maxit) > 1 || maxit < 1)
         stop("'maxit' should be an integer >= 1.")
@@ -60,7 +92,7 @@ galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
 
     if (is.null(lambda)) {
         Y_X <- matrix(0, m, p)
-        for (i in 1:m)
+        for (i in seq(m))
             Y_X[i,] <- t(y[[i]]) %*% x[[i]]
 
         v <- log(p * m) / log(n * m)
@@ -68,16 +100,16 @@ galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
         adWeight.power <- (gamma + 1) / 2
 
         norm <- sqrt(apply(Y_X ^ 2, 2, sum))
-        lambda.max <- max(pf * norm / (n * adWeight))
+        lambda.max <- max(norm / (n * adWeight))
 
         if (all(adWeight == rep(1, p)))
             lambda <- exp(seq(log(lambda.max),
                               log(lambda.max * lambda.min.ratio),
                               length.out = nlambda))
         else
-            lambda <- exp(seq(log(lambda.max)),
+            lambda <- exp(seq(log(lambda.max),
                               log(lambda.max * lambda.min.ratio / 100),
-                              length.out = nlambda)
+                              length.out = nlambda))
     } else {
         if (!is.numeric(lambda) || !is.vector(lambda))
             stop("'lambda' must be a numeric vector.")
@@ -86,104 +118,185 @@ galasso <- function(x, y, pf, adWeight, nlambda = 100, lambda.min.ratio = 1e-3,
         nlambda <- length(lambda)
     }
 
-    beta <- matrix(0, nlambda, p + 1)
-    dev  <- rep(0, nlambda)
-    df   <- rep(0, nlambda)
-    start  <- matrix(0, p + 1, m)
-    for (i in seq(nlambda)) {
-        L <- lambda[i] * adWeight * pf
-        fit <- fit.galasso.binomial(x, y, start, L, maxit, eps)
+    fit <- switch(match.arg(family),
+        gaussian = fit.galasso.gaussian(x, y, lambda, adWeight, maxit, eps),
+        binomial = fit.galasso.binomial(x, y, lambda, adWeight, maxit, eps))
 
-        start <- fit$coef
-        dev[i]   <- mean(fit$dev)
-        beta[i,] <- rowMeans(fit$coef)
-        df[i]    <- sum(beta[i,] != 0)
-    }
-
-
-    structure(list(beta = beta, dev = dev, lambda = lambda, df = df),
-              class = "galasso")
+    fit$beta <- apply(fit$beta, c(3, 1), mean)
+    return(fit)
 }
 
-
-fit.galasso.binomial <- function(x, y, start, L, maxit, eps)
+fit.galasso.binomial <- function(x, y, lambda, adWeight, maxit, eps)
 {
-
     n <- nrow(x[[1]])
     p <- ncol(x[[1]])
     m <- length(x)
-
-    beta  <- start[-1,]
-    beta0 <- start[1,]
 
     eta <- matrix(0, n, m)
     pi  <- matrix(0, n, m)
     res <- matrix(0, n, m)
     y.tilde <- y
+    fit.model <- function(start, L) {
+        beta  <- start[-1,]
+        beta0 <- start[1,]
 
-    it <- 0
-    beta.old  <- beta - 1
-    beta0.old <- beta0 - 1
-    comp.set  <- 1:p
-    while (max(abs(beta - beta.old)) > eps && it < maxit) {
+        it <- 0
+        beta.old  <- beta - 1
+        beta0.old <- beta0 - 1
+        comp.set  <- seq(p)
+        while (max(abs(beta - beta.old)) > eps && it < maxit) {
+            it <- it + 1
+            beta.old  <- beta
+            beta0.old <- beta0
+            for (i in seq(m)) {
+                eta[, i] <- x[[i]] %*% beta[, i]
+                eta[, i] <- eta[, i] + beta0[i]
 
-        it <- it + 1
-        beta.old  <- beta
-        beta0.old <- beta0
-        for (i in 1:m) {
-            eta[, i] <- x[[i]] %*% beta[, i]
-            eta[, i] <- eta[, i] + beta0[i]
+                pi[, i] <- exp(eta[, i]) / (1 + exp(eta[, i]))
+                pi[abs(1 - pi[, i]) <= 1e-5, i] <- 1
+                pi[abs(pi[, i]) <= 1e-5, i]     <- 0
 
-            pi[, i] <- exp(eta[, i]) / (1 + exp(eta[, i]))
-            pi[abs(1 - pi[, i]) <= 1e-5, i] <- 1
-            pi[abs(pi[, i]) <= 1e-5, i]     <- 0
+                y.tilde[[i]] <- eta[, i] + 4 * (y[[i]] - pi[, i])
+                res[, i]     <- y.tilde[[i]] - eta[, i]
+            }
 
-            y.tilde[[i]] <- eta[, i] + 4 * (y[[i]] - pi[, i])
-            res[, i]     <- y.tilde[[i]] - eta[, i]
+            # update intercept, res
+            for (i in seq(m)) {
+                beta0[i] <- mean(y.tilde[[i]])
+                res[, i] <- res[, i] - (beta0[i] - beta0.old[i])
+            }
+
+            # soft threshold each beta and update residuals
+            for (j in comp.set) {
+                z <- rep(0, m)
+                for (i in seq(m))
+                    z[i] <- t(x[[i]][, j]) %*% res[, i] + n * beta[j, i]
+
+                #soft threshold beta
+                beta[j,] <- t(threshold.galasso.binomial(z / (4 * n), L[j]))
+
+                # update residuals with thresholded beta
+                for (i in seq(m))
+                    res[, i] <- res[, i] - x[[i]][, j] * (beta[j, i] - beta.old[j, i])
+                }
+
+            comp.set <- which(beta[, 1] != 0)
+        }
+        if (max(abs(beta - beta.old)) >= eps)
+            warning("galasso did not converge: delta = ", max(abs(beta - beta.old)))
+
+        # tranform back into scale
+        coef <- matrix(NA, p + 1, m)
+        for (i in seq(m)) {
+            mu <- attr(x[[i]], "scaled:center")
+            sd <- attr(x[[i]], "scaled:scale")
+
+            # intercept
+            coef[1, i] <- beta0[i] - sum(mu / sd *  beta[, i])
+            coef[2:(p + 1), i] <- beta[, i] / sd
         }
 
-        # update intercept, res
-        for (i in 1:m) {
-            beta0[i] <- mean(y.tilde[[i]])
-            res[, i] <- res[, i] - (beta0[i] - beta0.old[i])
+        dev <- rep(0, m)
+        for (i in seq(m)) {
+            eta <- x[[i]] %*% beta[, i] + beta0[i]
+            dev[i] <- -2 * mean(y[[i]] * eta - log(1 + exp(eta)))
         }
 
-        # soft threshold each beta and update residuals
-        for (j in comp.set) {
+        list(beta = rbind(beta0, beta), coef = coef, dev = dev)
+    }
 
-            z <- rep(0, m)
-            for (i in 1:m)
-                z[i] <- t(x[[i]][, j]) %*% res[, i] + n * beta[j, i]
+    nlambda <- length(lambda)
+    beta <- array(0, c(p + 1, m, nlambda))
+    dev  <- rep(0, nlambda)
+    df   <- rep(0, nlambda)
+    start  <- matrix(0, p + 1, m)
+    for (i in seq(nlambda)) {
+        L <- lambda[i] * adWeight
+        fit <- fit.model(start, L)
 
-            #soft threshold beta
-            beta[j,] <- t(threshold.gaenet(z / (4 * n), L[j], 0))
+        start       <- fit$beta
+        dev[i]      <- mean(fit$dev)
+        beta[,, i]  <- fit$coef
+        df[i]       <- sum(beta[, 1, i] != 0)
+    }
 
-            # update res with thresholded beta
-            for (i in 1:m)
-                res[, i] <- res[, i] - x[[i]][, j] * (beta[j, i] - beta.old[j, i])
+    structure(list(lambda = lambda, beta = beta, df = df, dev = dev),
+              class = c("galasso.binomial", "galasso"))
+}
+
+fit.galasso.gaussian <- function(x, y, lambda, adWeight, maxit, eps)
+{
+    n <- nrow(x[[1]])
+    p <- ncol(x[[1]])
+    m <- length(x)
+
+    res <- matrix(0, n, m)
+    eta <- matrix(0, n, m)
+    fit.model <- function(start, L)
+    {
+        beta  <- start[-1,]
+        beta0 <- start[1,]
+        it <- 0
+        beta.old  <- beta - 1
+        beta0.old <- beta0 - 1
+        comp.set  <- seq(p)
+        while (max(abs(beta - beta.old)) > eps && it < maxit) {
+            it <- it + 1
+            beta.old  <- beta
+            beta0.old <- beta0
+
+            for (i in seq(m)) {
+                eta[, i] <- x[[i]] %*% beta[, i]
+                res[, i] <- y[[i]] - eta[, i] - beta0[i]
+            }
+
+            # update b
+            for (j in comp.set) {
+                # update z
+                z <- rep(0, m)
+                for (i in seq(m))
+                    z[i] <- t(x[[i]][, j]) %*% res[, i] + n * beta[j, i]
+
+                # soft threshold beta
+                beta[j, ] <- t(threshold.galasso.gaussian(z / n, L[j]))
+                # update residuals with thresholded beta
+                for (i in seq(m))
+                    res[, i] <- res[,i] - x[[i]][, j] * (beta[j, i] - beta.old[j, i])
+            }
+            comp.set <- which(beta[, 1] != 0)
+        }
+        if (max(abs(beta - beta.old)) >= eps)
+            warning("galasso did not converge: delta = ", max(abs(beta - beta.old)))
+
+        # tranform back into scale
+        coef <- matrix(NA, p + 1, m)
+        for (i in seq(m)) {
+            mu <- attr(x[[i]], "scaled:center")
+            sd <- attr(x[[i]], "scaled:scale")
+
+            # intercept
+            coef[1, i] <- beta0[i] - sum(mu / sd *  beta[, i])
+            coef[2:(p + 1), i] <- beta[, i] / sd
         }
 
-        comp.set <- which(beta[, 1] != 0)
-    }
-    if (max(abs(beta - beta.old)) >= eps)
-        warning("gaenet did not converge: delta = ", max(abs(beta - beta.old)))
-
-    # tranform back into scale
-    coef <- matrix(NA, p + 1, m)
-    for (i in 1:m) {
-        mu <- attr(x[[i]], "scaled:center")
-        sd <- attr(x[[i]], "scaled:scale")
-
-        # intercept
-        coef[1, i] <- beta0[i] - sum(mu / sd *  beta[, i])
-        coef[2:(p + 1), i] <- beta[, i] / sd
+        mse <- colMeans(res ^ 2)
+        list(beta = rbind(beta0, beta), coef = coef, mse = mse)
     }
 
-    dev <- rep(0, m)
-    for (i in seq(m)) {
-        eta <- x[[i]] %*% beta[, i] + beta0[i]
-        dev[i] <- -2 * mean(y[[i]] * eta - log(1 + exp(eta)))
-    }
+    nlambda <- length(lambda)
+    beta <- array(0, c(p + 1, m, nlambda))
+    mse  <- rep(0, nlambda)
+    df   <- rep(0, nlambda)
+    start  <- rbind(sapply(y, mean), matrix(0, p, m))
+    for (i in seq(nlambda)) {
+        L <- lambda[i] * adWeight
+        fit <- fit.model(start, L)
 
-    list(coef = coef, dev = dev)
+        start <- fit$beta
+        mse[i]   <- mean(fit$mse)
+        beta[,,i] <- fit$coef
+        df[i]    <- sum(beta[, 1, i] != 0)
+    }
+    structure(list(lambda = lambda, beta = beta, df = df, mse = mse),
+              class = c("galasso.gaussian", "galasso"))
 }

@@ -1,0 +1,163 @@
+#' Cross Validated Multiple Imputation Stacked Adaptive Elastic Net
+#'
+#' Does k-fold cross-validation for saenet, and returns optimal values for
+#' lambda and alpha.
+#'
+#' TODO
+#' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
+#'     contain an intercept, or any missing values
+#' @param y A list of \code{m} length n numeric response vectors. No vector
+#'     should contain missing values
+#' @param pf Penalty factor. Can be used to differentially penalize certain
+#'     variables
+#' @param adWeight Numeric vector of length p representing the adaptive weights
+#'     for the L1 penalty
+#' @param weights Numeric vector of length n containing the proportion observed
+#'     (non-missing) for each row in the un-imputed data.
+#' @param family The type of response. "gaussian" implies a continuous response
+#'     and "binomial" implies a binary response. Default is "gaussian".
+#' @param alpha Elastic net parameter. Can be a vector to cross validate over.
+#'     Default is 1
+#' @param lambda Optional numeric vector of lambdas to fit. If NULL,
+#'    \code{galasso} will automatically generate a lambda sequence based off
+#'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
+#' @param nlambda Length of automatically generated 'lambda' sequence. If
+#'     lambda' is non NULL, 'nlambda' is ignored. Default is 100
+#' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
+#'     when automatically generating a 'lambda' sequence. If 'lambda' is not
+#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
+#' @param nfolds Number of foldid to use for cross validation. Default is 10
+#' @param foldid TODO
+#' @param maxit Maximum number of iterations to run. Default is 1000
+#' @param eps Tolerance for convergence. Default is 1e-5
+#' @return An object of type "cv.saenet" with 9 elements:
+#' \describe{
+#' \item{lambda}{Sequence of lambdas fit.}
+#' \item{cvm}{Average cross validation error for each lambda and alpha. For
+#'            family = "gaussian", 'cvm' corresponds to mean squared error,
+#'            and for binomial 'cvm' corresponds to deviance.}
+#' \item{cvse}{Standard error of 'cvm'.}
+#' \item{saenet.fit}{A 'saenet' object fit to the full data.}
+#' \item{lambda.min}{The lambda value for the model with the minimum cross
+#'                   validation error.}
+#' \item{lambda.1se}{The lambda value for the  sparsest model within one
+#'                   standard error of the minimum cross validation error.}
+#' \item{alpha.min}{The alpha value for the model with the minimum cross
+#'                   validation error.}
+#' \item{alpha.1se}{The alpha value for the  sparsest model within one
+#'                   standard error of the minimum cross validation error.}
+
+#' \item{df}{The number of nonzero coefficients for each value of lambda and alpha.}
+#' }
+#' @export
+cv.saenet <- function(x, y, pf, adWeight, weights, family =
+                      c("gaussian", "binomial"), alpha = 1, nlambda = 100,
+                      lambda.min.ratio = 1e-3, lambda = NULL, nfolds = 10,
+                      foldid = NULL, maxit = 1000, eps = 1e-5)
+{
+
+    if (!is.numeric(nfolds) || length(nfolds) > 1)
+        stop("'nfolds' should a be single number.")
+
+    if (!is.null(foldid))
+        if (!is.numeric(foldid) || length(foldid) != length(y[[1]]))
+            stop("'nfolds' should a be single number.")
+
+    fit <- saenet(x, y, pf, adWeight, weights, family, alpha, nlambda,
+                  lambda.min.ratio, lambda, maxit, eps)
+
+    n <- length(y[[1]])
+    p <- ncol(x[[1]])
+    m <- length(x)
+
+    X <- do.call("rbind", x)
+    Y <- do.call("c", y)
+
+    weights <- rep(weights / m , m)
+
+    if (!is.null(foldid)) {
+        stop("Not implemented")
+    } else {
+        r     <- n %% nfolds
+        q     <- (n - r) / nfolds
+        foldid <- c(rep(seq(nfolds), q), seq(r))
+        foldid <- sample(foldid, n)
+        foldid <- rep(foldid, m)
+    }
+    lambda <- fit$lambda
+    X.scaled <- scale(X, scale = apply(X, 2, function(.X) stats::sd(.X) * sqrt(m)))
+
+    cvm  <- array(0, c(nfolds, length(alpha), nlambda))
+    cvse <- matrix(nlambda, length(alpha))
+    for (j in seq(nfolds)) {
+        Y.train <- Y[foldid != j]
+        X.train <- subset_scaled_matrix(X.scaled, foldid != j)
+        w.train <- weights[foldid != j]
+
+        X.test  <- X[foldid == j, , drop = F]
+        Y.test  <- Y[foldid == j]
+        w.test <- weights[foldid == j]
+        cv.fit <- switch(match.arg(family),
+            gaussian = fit.saenet.gaussian(X.train, Y.train, n, p, m, w.train,
+                                           nlambda, lambda, alpha, pf, adWeight,
+                                           maxit, eps),
+            binomial = fit.saenet.binomial(X.train, Y.train, n, p, m, w.train,
+                                           nlambda, lambda, alpha, pf, adWeight,
+                                           maxit, eps)
+        )
+
+        cvm[,, j] <- cv.saenet.err(cv.fit, X.test, Y.test, w.test, m)
+    }
+
+    cvse <- apply(cvm, c(3, 2), stats::sd) / sqrt(nfolds)
+    cvm <- apply(cvm, c(3, 2), mean)
+    i <- which.min(cvm)
+
+    row <- (i - 1) %% nlambda + 1
+
+    col <- (i - 1) %/% nlambda + 1
+
+    lambda.min <- fit$lambda[row]
+    alpha.min  <- alpha[col]
+
+    j <- abs(cvm - min(cvm)) < cvse[i]
+    # Inf could cause NaN if df = 0
+    i <- which.min(fit$df * ifelse(j, 1, 1e9))
+
+    row <- (i - 1) %% nlambda + 1
+    col <- (i - 1) %/% nlambda + 1
+
+    lambda.1se <- fit$lambda[row]
+    alpha.1se  <- alpha[col]
+
+    structure(list(lambda = fit$lambda, alpha = alpha, cvm = cvm, cvse = cvse, saenet.fit =
+                   fit, lambda.min = lambda.min, alpha.min = alpha.min,
+                   lambda.1se = lambda.1se, alpha.1se = alpha.1se,
+                   df = fit$df), class = "cv.saenet")
+}
+
+
+cv.saenet.err <- function(cv.fit, X.test, Y.test, w.test, m)
+{
+    nalpha <- length(cv.fit$alpha)
+    nlambda <- length(cv.fit$lambda)
+    cvm <- matrix(0, nlambda, nalpha)
+
+    for (j in seq(nlambda)) {
+        for (i in seq(nalpha)) {
+            beta <- cv.fit$beta[j, i,]
+            beta0 <- beta[1]
+            beta  <- beta[-1]
+            if ("saenet.gaussian" %in% class(cv.fit)) {
+                mse <- m * mean((Y.test - X.test %*% beta - beta0) ^ 2 * w.test)
+                cvm[j, i] <- mse
+            }
+            else {
+                eta <- X.test %*% beta + beta0
+                dev <-  w.test * (Y.test * eta - log(1 + exp(eta)))
+                cvm[j, i] <- -2 * m * mean(dev)
+            }
+        }
+    }
+    cvm
+}

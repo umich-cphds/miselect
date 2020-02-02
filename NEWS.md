@@ -1,2 +1,2 @@
-# SAMBA v0.5
-* Beta version of SAMBA for BioArxiv
+# impnet v0.5
+* Beta version of impnet
