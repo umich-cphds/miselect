@@ -95,10 +95,6 @@ galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
         for (i in seq(m))
             Y_X[i,] <- t(y[[i]]) %*% x[[i]]
 
-        v <- log(p * m) / log(n * m)
-        gamma <- ceiling(2 * v / (1 - v)) + 1
-        adWeight.power <- (gamma + 1) / 2
-
         norm <- sqrt(apply(Y_X ^ 2, 2, sum))
         lambda.max <- max(norm / (n * adWeight))
 
@@ -153,8 +149,6 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, maxit, eps)
                 eta[, i] <- eta[, i] + beta0[i]
 
                 pi[, i] <- exp(eta[, i]) / (1 + exp(eta[, i]))
-                pi[abs(1 - pi[, i]) <= 1e-5, i] <- 1
-                pi[abs(pi[, i]) <= 1e-5, i]     <- 0
 
                 y.tilde[[i]] <- eta[, i] + 4 * (y[[i]] - pi[, i])
                 res[, i]     <- y.tilde[[i]] - eta[, i]
@@ -209,12 +203,12 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, maxit, eps)
     beta <- array(0, c(p + 1, m, nlambda))
     dev  <- rep(0, nlambda)
     df   <- rep(0, nlambda)
-    start  <- matrix(0, p + 1, m)
+    start  <- matrix(1, p + 1, m)
     for (i in seq(nlambda)) {
         L <- lambda[i] * adWeight
         fit <- fit.model(start, L)
 
-        start       <- fit$beta
+        # start       <- fit$beta
         dev[i]      <- mean(fit$dev)
         beta[,, i]  <- fit$coef
         df[i]       <- sum(beta[, 1, i] != 0)
@@ -287,12 +281,12 @@ fit.galasso.gaussian <- function(x, y, lambda, adWeight, maxit, eps)
     beta <- array(0, c(p + 1, m, nlambda))
     mse  <- rep(0, nlambda)
     df   <- rep(0, nlambda)
-    start  <- rbind(sapply(y, mean), matrix(0, p, m))
+    start  <- rbind(sapply(y, mean), matrix(1, p, m))
     for (i in seq(nlambda)) {
         L <- lambda[i] * adWeight
         fit <- fit.model(start, L)
 
-        start <- fit$beta
+        # start <- fit$beta
         mse[i]   <- mean(fit$mse)
         beta[,,i] <- fit$coef
         df[i]    <- sum(beta[, 1, i] != 0)
