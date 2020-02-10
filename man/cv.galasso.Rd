@@ -81,7 +81,30 @@ lambda.
 TODO
 }
 \examples{
-# TODO
+library(mianet)
+library(mice)
+
+mids <- mice(example.df, m = 5, print = F)
+dfs <- lapply(1:5, function(i) complete(mids, action = i))
+
+# Generate list of imputed design matrices and imputed responses
+x <- list()
+y <- list()
+for (i in 1:5) {
+    x[[i]] <- as.matrix(dfs[[i]][, paste0("X", 1:20)])
+    y[[i]] <- dfs[[i]]$Y
+}
+
+pf       <- rep(1, 20)
+adWeight <- rep(1, 20)
+# Since 'Y' is a binary variable, we use 'family = "binomial"'
+\donttest{
+fit <- cv.galasso(x,y, pf, adWeight, family = "binomial")
+
+# Get selected variables from the 1 standard error rule
+i <- which(fit$lambda == fit$lambda.1se)
+coef <- fit$galasso.fit$beta[i,]
+}
 }
 \references{
 TODO
