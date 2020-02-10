@@ -210,7 +210,6 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
 fit.saenet.gaussian <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
                                 pf, adWeight, maxit, eps)
 {
-
     res <- numeric(n * m)
     fit.model <- function(L1, L2)
     {
@@ -264,6 +263,7 @@ fit.saenet.gaussian <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
         for (i in seq(nlambda)) {
             L1 <- lambda[i] * alpha[j] * adWeight * pf
             L2 <- lambda[i] * (1 - alpha[j]) * pf
+
             fit <- fit.model(L1, L2)
             beta[i, j, ] <- fit$coef
             mse[i, j]    <- fit$mse

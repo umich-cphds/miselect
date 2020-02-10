@@ -18,16 +18,19 @@
 #'     and "binomial" implies a binary response. Default is "gaussian".
 #' @param alpha Elastic net parameter. Can be a vector to cross validate over.
 #'     Default is 1
-#' @param lambda Optional numeric vector of lambdas to fit. If NULL,
-#'    \code{galasso} will automatically generate a lambda sequence based off
-#'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
 #' @param nlambda Length of automatically generated 'lambda' sequence. If
 #'     lambda' is non NULL, 'nlambda' is ignored. Default is 100
 #' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
 #'     when automatically generating a 'lambda' sequence. If 'lambda' is not
 #'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
-#' @param nfolds Number of foldid to use for cross validation. Default is 10
-#' @param foldid TODO
+#' @param lambda Optional numeric vector of lambdas to fit. If NULL,
+#'    \code{galasso} will automatically generate a lambda sequence based off
+#'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
+#' @param nfolds Number of foldid to use for cross validation. Default is 10,
+#'     minimum is 3
+#' @param foldid an optional vector of values between 1 and ‘nfold’
+#' identifying what fold each observation is in. Default is NULL and
+#' \code{cv.saenet} will automatically generate folds
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return An object of type "cv.saenet" with 9 elements:
@@ -76,18 +79,25 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family =
     weights <- rep(weights / m , m)
 
     if (!is.null(foldid)) {
-        stop("Not implemented")
+        if (!is.numeric(foldid) || !is.vector(foldid) || length(foldid) != n)
+            stop("'foldid' must be length n numeric vector.")
+        nfolds <- max(foldid)
     } else {
+
         r     <- n %% nfolds
         q     <- (n - r) / nfolds
         foldid <- c(rep(seq(nfolds), q), seq(r))
         foldid <- sample(foldid, n)
         foldid <- rep(foldid, m)
     }
-    lambda <- fit$lambda
+    if (nfolds < 3)
+        stop("'nfolds' must be bigger than 3.")
+
+    lambda  <- fit$lambda
+    nlambda <- length(lambda)
     X.scaled <- scale(X, scale = apply(X, 2, function(.X) stats::sd(.X) * sqrt(m)))
 
-    cvm  <- array(0, c(nfolds, length(alpha), nlambda))
+    cvm  <- array(0, c(nlambda, length(alpha), nfolds))
     cvse <- matrix(nlambda, length(alpha))
     for (j in seq(nfolds)) {
         Y.train <- Y[foldid != j]
@@ -97,6 +107,7 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family =
         X.test  <- X[foldid == j, , drop = F]
         Y.test  <- Y[foldid == j]
         w.test <- weights[foldid == j]
+
         cv.fit <- switch(match.arg(family),
             gaussian = fit.saenet.gaussian(X.train, Y.train, n, p, m, w.train,
                                            nlambda, lambda, alpha, pf, adWeight,
@@ -109,8 +120,8 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family =
         cvm[,, j] <- cv.saenet.err(cv.fit, X.test, Y.test, w.test, m)
     }
 
-    cvse <- apply(cvm, c(3, 2), stats::sd) / sqrt(nfolds)
-    cvm <- apply(cvm, c(3, 2), mean)
+    cvse <- apply(cvm, c(1, 2), stats::sd) / sqrt(nfolds)
+    cvm <- apply(cvm, c(1, 2), mean)
     i <- which.min(cvm)
 
     row <- (i - 1) %% nlambda + 1

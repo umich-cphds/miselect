@@ -9,6 +9,8 @@
 #'     contain an intercept, or any missing values
 #' @param y A list of \code{m} length n numeric response vectors. No vector
 #'     should contain missing values
+#' @param pf Penalty factor. Can be used to differentially penalize certain
+#'     variables
 #' @param adWeight Numeric vector of length p representing the adaptive weights
 #'     for the L1 penalty
 #' @param family The type of response. "gaussian" implies a continuous response
@@ -20,7 +22,7 @@
 #'     lambda' is non NULL, 'nlambda' is ignored. Default is 100
 #' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
 #'     when automatically generating a 'lambda' sequence. If 'lambda' is not
-#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
+#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-4
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return
@@ -43,7 +45,7 @@
 #' @references
 #' TODO
 #' @export
-galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
+galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                     nlambda = 100, lambda.min.ratio = 1e-3, lambda = NULL,
                     maxit = 1000, eps = 1e-5)
 {
@@ -73,6 +75,9 @@ galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
         stop("'adWeight' should be a non negative vector of length p.")
     }
 
+    if (!is.numeric(pf) || !is.vector(pf) || length(pf) != p || any(pf < 0))
+        stop("'pf' should be a non negative vector of length p.")
+
     if (!is.numeric(nlambda) || length(nlambda) > 1 || nlambda < 1)
         stop("'nlambda' should be an integer >= 1.")
 
@@ -96,7 +101,7 @@ galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
             Y_X[i,] <- t(y[[i]]) %*% x[[i]]
 
         norm <- sqrt(apply(Y_X ^ 2, 2, sum))
-        lambda.max <- max(norm / (n * adWeight))
+        lambda.max <- max(norm / (n * adWeight * pf))
 
         if (all(adWeight == rep(1, p)))
             lambda <- exp(seq(log(lambda.max),
@@ -115,14 +120,14 @@ galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
     }
 
     fit <- switch(match.arg(family),
-        gaussian = fit.galasso.gaussian(x, y, lambda, adWeight, maxit, eps),
-        binomial = fit.galasso.binomial(x, y, lambda, adWeight, maxit, eps))
+        gaussian = fit.galasso.gaussian(x, y, lambda, adWeight, pf, maxit, eps),
+        binomial = fit.galasso.binomial(x, y, lambda, adWeight, pf, maxit, eps))
 
     fit$beta <- apply(fit$beta, c(3, 1), mean)
     return(fit)
 }
 
-fit.galasso.binomial <- function(x, y, lambda, adWeight, maxit, eps)
+fit.galasso.binomial <- function(x, y, lambda, adWeight, pf, maxit, eps)
 {
     n <- nrow(x[[1]])
     p <- ncol(x[[1]])
@@ -205,7 +210,7 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, maxit, eps)
     df   <- rep(0, nlambda)
     start  <- matrix(1, p + 1, m)
     for (i in seq(nlambda)) {
-        L <- lambda[i] * adWeight
+        L <- lambda[i] * adWeight * pf
         fit <- fit.model(start, L)
 
         # start       <- fit$beta
@@ -218,7 +223,7 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, maxit, eps)
               class = c("galasso.binomial", "galasso"))
 }
 
-fit.galasso.gaussian <- function(x, y, lambda, adWeight, maxit, eps)
+fit.galasso.gaussian <- function(x, y, lambda, adWeight, pf, maxit, eps)
 {
     n <- nrow(x[[1]])
     p <- ncol(x[[1]])
@@ -283,7 +288,7 @@ fit.galasso.gaussian <- function(x, y, lambda, adWeight, maxit, eps)
     df   <- rep(0, nlambda)
     start  <- rbind(sapply(y, mean), matrix(1, p, m))
     for (i in seq(nlambda)) {
-        L <- lambda[i] * adWeight
+        L <- lambda[i] * adWeight * pf
         fit <- fit.model(start, L)
 
         # start <- fit$beta

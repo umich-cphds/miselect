@@ -8,20 +8,25 @@
 #'     contain an intercept, or any missing values
 #' @param y A list of \code{m} length n numeric response vectors. No vector
 #'     should contain missing values
+#' @param pf Penalty factor. Can be used to differentially penalize certain
+#'     variables
 #' @param adWeight Numeric vector of length p representing the adaptive weights
 #'     for the L1 penalty
 #' @param family The type of response. "gaussian" implies a continuous response
 #'     and "binomial" implies a binary response. Default is "gaussian".
-#' @param lambda Optional numeric vector of lambdas to fit. If NULL,
-#'    \code{galasso} will automatically generate a lambda sequence based off
-#'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
 #' @param nlambda Length of automatically generated 'lambda' sequence. If
 #'     lambda' is non NULL, 'nlambda' is ignored. Default is 100
 #' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
 #'     when automatically generating a 'lambda' sequence. If 'lambda' is not
-#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
-#' @param nfolds Number of folds to use for cross validation. Default is 10
-#' @param foldid TODO
+#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-4
+#' @param lambda Optional numeric vector of lambdas to fit. If NULL,
+#'    \code{galasso} will automatically generate a lambda sequence based off
+#'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
+#' @param nfolds Number of foldid to use for cross validation. Default is 10,
+#'     minimum is 3
+#' @param foldid an optional vector of values between 1 and ‘nfold’
+#' identifying what fold each observation is in. Default is NULL and
+#' \code{cv.galasso} will automatically generate folds
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return An object of type "cv.galasso" with 7 elements:
@@ -43,7 +48,7 @@
 #' @references
 #' TODO
 #' @export
-cv.galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
+cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                        nlambda = 100, lambda.min.ratio = 1e-4, lambda = NULL,
                        nfolds = 10, foldid = NULL, maxit = 1000, eps = 1e-5)
 {
@@ -55,18 +60,22 @@ cv.galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
         if (!is.numeric(foldid) || length(foldid) != length(y[[1]]))
             stop("'nfolds' should a be single number.")
 
-    fit <- galasso(x, y, adWeight, family, nlambda, lambda.min.ratio,
+    fit <- galasso(x, y, pf, adWeight, family, nlambda, lambda.min.ratio,
                    lambda, maxit, eps)
 
     n <- length(y[[1]])
     if (!is.null(foldid)) {
-        stop("Not implemented")
+        if (!is.numeric(foldid) || !is.vector(foldid) || length(foldid) != n)
+            stop("'foldid' must be length n numeric vector.")
+        nfolds <- max(foldid)
     } else {
         r     <- n %% nfolds
         q     <- (n - r) / nfolds
         folds <- c(rep(seq(nfolds), q), seq(r))
         folds <- sample(folds, n)
     }
+    if (nfolds < 3)
+        stop("'nfolds' must be bigger than 3.")
 
     m <- length(x)
     p <- ncol(x[[1]])
@@ -83,9 +92,9 @@ cv.galasso <- function(x, y, adWeight, family = c("gaussian", "binomial"),
                               subset_scaled_matrix(.x, folds != j))
 
         cv.fit <- switch(match.arg(family),
-            binomial = fit.galasso.binomial(x.train, y.train, fit$lambda,
+            binomial = fit.galasso.binomial(x.train, y.train, fit$lambda, pf,
                                             adWeight, maxit, eps),
-            gaussian = fit.galasso.gaussian(x.train, y.train, fit$lambda,
+            gaussian = fit.galasso.gaussian(x.train, y.train, fit$lambda, pf,
                                             adWeight, maxit, eps)
         )
 

@@ -4,9 +4,20 @@
 \alias{cv.galasso}
 \title{Cross Validated Multiple Imputation Grouped Adaptive LASSO}
 \usage{
-cv.galasso(x, y, adWeight, family = c("gaussian", "binomial"),
-  nlambda = 100, lambda.min.ratio = 1e-04, lambda = NULL,
-  nfolds = 10, foldid = NULL, maxit = 1000, eps = 1e-05)
+cv.galasso(
+  x,
+  y,
+  pf,
+  adWeight,
+  family = c("gaussian", "binomial"),
+  nlambda = 100,
+  lambda.min.ratio = 1e-04,
+  lambda = NULL,
+  nfolds = 10,
+  foldid = NULL,
+  maxit = 1000,
+  eps = 1e-05
+)
 }
 \arguments{
 \item{x}{A list of \code{m} \code{n x p} numeric matrices. No matrix should
@@ -14,6 +25,9 @@ contain an intercept, or any missing values}
 
 \item{y}{A list of \code{m} length n numeric response vectors. No vector
 should contain missing values}
+
+\item{pf}{Penalty factor. Can be used to differentially penalize certain
+variables}
 
 \item{adWeight}{Numeric vector of length p representing the adaptive weights
 for the L1 penalty}
@@ -26,15 +40,18 @@ lambda' is non NULL, 'nlambda' is ignored. Default is 100}
 
 \item{lambda.min.ratio}{Ratio that determines the minimum value of 'lambda'
 when automatically generating a 'lambda' sequence. If 'lambda' is not
-NULL, 'lambda.min.ratio' is ignored. Default is 1e-3}
+NULL, 'lambda.min.ratio' is ignored. Default is 1e-4}
 
 \item{lambda}{Optional numeric vector of lambdas to fit. If NULL,
 \code{galasso} will automatically generate a lambda sequence based off
 of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
 
-\item{nfolds}{Number of folds to use for cross validation. Default is 10}
+\item{nfolds}{Number of foldid to use for cross validation. Default is 10,
+minimum is 3}
 
-\item{foldid}{TODO}
+\item{foldid}{an optional vector of values between 1 and ‘nfold’
+identifying what fold each observation is in. Default is NULL and
+\code{cv.galasso} will automatically generate folds}
 
 \item{maxit}{Maximum number of iterations to run. Default is 1000}
 

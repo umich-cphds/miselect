@@ -4,9 +4,18 @@
 \alias{galasso}
 \title{Multiple Imputation Grouped Adaptive LASSO}
 \usage{
-galasso(x, y, adWeight, family = c("gaussian", "binomial"),
-  nlambda = 100, lambda.min.ratio = 0.001, lambda = NULL,
-  maxit = 1000, eps = 1e-05)
+galasso(
+  x,
+  y,
+  pf,
+  adWeight,
+  family = c("gaussian", "binomial"),
+  nlambda = 100,
+  lambda.min.ratio = 0.001,
+  lambda = NULL,
+  maxit = 1000,
+  eps = 1e-05
+)
 }
 \arguments{
 \item{x}{A list of \code{m} \code{n x p} numeric matrices. No matrix should
@@ -14,6 +23,9 @@ contain an intercept, or any missing values}
 
 \item{y}{A list of \code{m} length n numeric response vectors. No vector
 should contain missing values}
+
+\item{pf}{Penalty factor. Can be used to differentially penalize certain
+variables}
 
 \item{adWeight}{Numeric vector of length p representing the adaptive weights
 for the L1 penalty}
@@ -26,7 +38,7 @@ lambda' is non NULL, 'nlambda' is ignored. Default is 100}
 
 \item{lambda.min.ratio}{Ratio that determines the minimum value of 'lambda'
 when automatically generating a 'lambda' sequence. If 'lambda' is not
-NULL, 'lambda.min.ratio' is ignored. Default is 1e-3}
+NULL, 'lambda.min.ratio' is ignored. Default is 1e-4}
 
 \item{lambda}{Optional numeric vector of lambdas to fit. If NULL,
 \code{galasso} will automatically generate a lambda sequence based off
