@@ -1,2 +1,2 @@
-# impnet v0.5
-* Beta version of impnet
+# mianet v0.5
+* Beta version of mianet

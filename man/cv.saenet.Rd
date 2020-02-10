@@ -96,7 +96,7 @@ TODO
 library(mianet)
 library(mice)
 
-mids <- mice(example.df, m = 5, print = F)
+mids <- mice(mianet.df, m = 5, printFlag = FALSE)
 dfs <- lapply(1:5, function(i) complete(mids, action = i))
 
 # Generate list of imputed design matrices and imputed responses
@@ -108,7 +108,7 @@ for (i in 1:5) {
 }
 
 # Calculate observational weights
-weights  <- 1 - rowMeans(is.na(example.df))
+weights  <- 1 - rowMeans(is.na(mianet.df))
 pf       <- rep(1, 20)
 adWeight <- rep(1, 20)
 
