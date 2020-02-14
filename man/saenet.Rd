@@ -72,7 +72,9 @@ Both subtypes have 4 elements:
 }
 }
 \description{
-TODO
+Fits an adaptive elastic net for multiply imputed data. The data is stacked
+and is penalized that each imputation selects the same betas at each value
+of lambda. "saenet" supports both continuous and binary responses.
 }
 \details{
 TODO

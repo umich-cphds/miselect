@@ -1,7 +1,18 @@
 Stacked and Grouped Penalized Regression For Multiply Imputed Data
 ==================================================================
 
-TODO
+Penalized regression methods, such as lasso and elastic net, are used in
+many biomedical applications when simultaneous regression coefficient
+estimation and variable selection is desired. However, missing data
+complicates the implementation of these methods, particularly when
+missingness is handled using multiple imputation. Applying a variable
+selection algorithm on each imputed dataset will likely lead to
+different sets of selected predictors, making it difficult to ascertain
+a final active set without resorting to ad hoc combination rules.
+'mianet' presents Stacked Adaptive Elestic Net (saenet) and Grouped
+Adaptive LASSO (galasso) for continuous and binary outcomes, which by
+construction force selection of the same variables across multiply
+imputed data.
 
 Installation
 ------------
