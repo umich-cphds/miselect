@@ -145,8 +145,11 @@ galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
 
     fit$beta <- apply(fit$beta, c(3, 1), mean)
 
-    colnames(fit$beta) <- c("(Intercept)", colnames(x[[1]]))
-    
+    cn <- colnames(x[[1]])
+    if (is.null(cn))
+        cn <- paste0("x", seq(p))
+    colnames(fit$beta) <- c("(Intercept)", cn)
+
     return(fit)
 }
 
