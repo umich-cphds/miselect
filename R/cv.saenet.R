@@ -1,7 +1,7 @@
 #' Cross Validated Multiple Imputation Stacked Adaptive Elastic Net
 #'
-#' Does k-fold cross-validation for saenet, and returns optimal values for
-#' lambda and alpha.
+#' Does k-fold cross-validation for \code{saenet}, and returns optimal values
+#' for lambda and alpha.
 #'
 #' TODO
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
@@ -58,6 +58,9 @@
 #' library(mianet)
 #' library(mice)
 #'
+#' set.seed(48109)
+#'
+#' # Using the mice defaults for sake of example only.
 #' mids <- mice(mianet.df, m = 5, printFlag = FALSE)
 #' dfs <- lapply(1:5, function(i) complete(mids, action = i))
 #'

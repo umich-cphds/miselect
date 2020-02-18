@@ -22,8 +22,8 @@ selection algorithm on each imputed dataset will likely lead
 to different sets of selected predictors, making it difficult
 to ascertain a final active set without resorting to ad hoc
 combination rules. 'mianet' presents Stacked Adaptive Elestic Net (saenet)
-and Grouped Adaptive LASSO (galasso) for continuous and binary outcomes,
-which by construction force selection of the same variables across
+and Grouped Adaptive LASSO (galasso) for continuous and binary outcomes.
+They, by construction, force selection of the same variables across
 multiply imputed data.
 
 ## Installation
@@ -38,8 +38,39 @@ so if you are experiencing issues, you may want to try the Github
 version of the package.
 
 ## Example
-TODO
 
+Here is how to use cross validated `saenet`. A nice feature of `saenet`
+is that you can cross validate over `alpha` without having to use `foldid`.
+
+```{r}
+library(mianet)
+library(mice)
+
+set.seed(48109)
+# Using the mice defaults for sake of example only.
+mids <- mice(mianet.df, m = 5, printFlag = FALSE)
+dfs <- lapply(1:5, function(i) complete(mids, action = i))
+
+# Generate list of imputed design matrices and imputed responses
+x <- list()
+y <- list()
+for (i in 1:5) {
+    x[[i]] <- as.matrix(dfs[[i]][, paste0("X", 1:20)])
+    y[[i]] <- dfs[[i]]$Y
+}
+
+# Calculate observational weights
+weights  <- 1 - rowMeans(is.na(mianet.df))
+pf       <- rep(1, 20)
+adWeight <- rep(1, 20)
+alpha    <- c(.5 , 1)
+
+# Since 'Y' is a binary variable, we use 'family = "binomial"'
+fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial",
+                 alpha = alpha)
+
+coef(fit)                 
+```
 ## Bugs
 If you encounter a bug, please open an issue on the [Issues](https://github.com/umich-cphds/mianet/issues)
 tab on Github or send us an email.

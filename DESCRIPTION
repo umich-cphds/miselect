@@ -15,14 +15,15 @@ Description:
     to different sets of selected predictors, making it difficult
     to ascertain a final active set without resorting to ad hoc
     combination rules. 'mianet' presents Stacked Adaptive Elestic Net (saenet)
-    and Grouped Adaptive LASSO (galasso) for continuous and binary outcomes,
-    which by construction force selection of the same variables across
+    and Grouped Adaptive LASSO (galasso) for continuous and binary outcomes.
+    They, by construction, force selection of the same variables across
     multiply imputed data.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
-Imports:
+Depends:
+    R (>= 3.5.0)
 Suggests:
     mice,
     knitr,

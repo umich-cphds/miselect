@@ -142,12 +142,19 @@ saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial
         nlambda <- length(lambda)
     }
 
-    switch(match.arg(family),
+    fit <- switch(match.arg(family),
         gaussian = fit.saenet.gaussian(X, Y, n, p, m, weights, nlambda, lambda,
                                        alpha, pf, adWeight, maxit, eps),
         binomial = fit.saenet.binomial(X, Y, n, p, m, weights, nlambda, lambda,
                                        alpha, pf, adWeight, maxit, eps)
     )
+
+    cn <- colnames(x[[1]])
+    if (is.null(cn))
+        cn <- paste0("x", seq(p))
+    dimnames(fit$beta) <- list(NULL, NULL, c("(Intercept)", cn))
+
+    return(fit)
 }
 
 fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,

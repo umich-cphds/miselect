@@ -1,7 +1,7 @@
 #' Cross Validated Multiple Imputation Grouped Adaptive LASSO
 #'
-#' Does k-fold cross-validation for galasso, and returns an optimal value for
-#' lambda.
+#' Does k-fold cross-validation for \code{galasso}, and returns an optimal value
+#' for lambda.
 #'
 #' TODO
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
@@ -47,6 +47,9 @@
 #' library(mianet)
 #' library(mice)
 #'
+#' set.seed(48109)
+#'
+#' # Using the mice defaults for sake of example only.
 #' mids <- mice(mianet.df, m = 5, printFlag = FALSE)
 #' dfs <- lapply(1:5, function(i) complete(mids, action = i))
 #'

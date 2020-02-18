@@ -10,8 +10,8 @@ selection algorithm on each imputed dataset will likely lead to
 different sets of selected predictors, making it difficult to ascertain
 a final active set without resorting to ad hoc combination rules.
 'mianet' presents Stacked Adaptive Elestic Net (saenet) and Grouped
-Adaptive LASSO (galasso) for continuous and binary outcomes, which by
-construction force selection of the same variables across multiply
+Adaptive LASSO (galasso) for continuous and binary outcomes. They, by
+construction, force selection of the same variables across multiply
 imputed data.
 
 Installation
@@ -29,7 +29,51 @@ the package.
 Example
 -------
 
-TODO
+Here is how to use cross validated `saenet`. A nice feature of `saenet`
+is that you can cross validate over `alpha` without having to use
+`foldid`.
+
+    library(mianet)
+    library(mice)
+    #> Loading required package: lattice
+    #> 
+    #> Attaching package: 'mice'
+    #> The following objects are masked from 'package:base':
+    #> 
+    #>     cbind, rbind
+
+    set.seed(48109)
+    # Using the mice defaults for sake of example only.
+    mids <- mice(mianet.df, m = 5, printFlag = FALSE)
+    dfs <- lapply(1:5, function(i) complete(mids, action = i))
+
+    # Generate list of imputed design matrices and imputed responses
+    x <- list()
+    y <- list()
+    for (i in 1:5) {
+        x[[i]] <- as.matrix(dfs[[i]][, paste0("X", 1:20)])
+        y[[i]] <- dfs[[i]]$Y
+    }
+
+    # Calculate observational weights
+    weights  <- 1 - rowMeans(is.na(mianet.df))
+    pf       <- rep(1, 20)
+    adWeight <- rep(1, 20)
+    alpha    <- c(.5 , 1)
+
+    # Since 'Y' is a binary variable, we use 'family = "binomial"'
+    fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial",
+                     alpha = alpha)
+
+    coef(fit)                 
+    #>  (Intercept)           X1           X2           X3           X4           X5 
+    #>  0.075336069  1.465012227  0.773562992 -0.132892848  1.814095899  0.090605078 
+    #>           X6           X7           X8           X9          X10          X11 
+    #>  0.000000000  1.803555612  0.002901045 -0.053939183 -0.090949859  1.314651703 
+    #>          X12          X13          X14          X15          X16          X17 
+    #> -0.001398250  0.000000000  0.000000000 -0.210676071  0.057351962  0.340355076 
+    #>          X18          X19          X20 
+    #>  0.071108301 -0.269948553  0.000000000
 
 Bugs
 ----
