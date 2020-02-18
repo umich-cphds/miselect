@@ -77,7 +77,11 @@ and is penalized that each imputation selects the same betas at each value
 of lambda. "saenet" supports both continuous and binary responses.
 }
 \details{
-TODO
+\code{saenet} works by stacking the multiply imputed data into a single
+matrix and running a weighted adaptive elastic net on it. Simulations suggest
+that the "stacked" objective function approaches tend to be more
+computationally efficient and have better estimation and selection
+properties.
 }
 \examples{
 library(mianet)
@@ -100,7 +104,9 @@ pf       <- rep(1, 20)
 adWeight <- rep(1, 20)
 
 # Since 'Y' is a binary variable, we use 'family = "binomial"'
+\donttest{
 fit <- saenet(x, y, pf, adWeight, weights, family = "binomial")
+}
 }
 \references{
 TODO

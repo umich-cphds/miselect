@@ -1,4 +1,12 @@
-Stacked and Grouped Penalized Regression For Multiply Imputed Data
+<!-- Badges -->
+[![CRAN
+Version](https://img.shields.io/cran/v/mianet?style=flat-square&color=blue&label=CRAN)](https://cran.r-project.org/package=mianet)
+[![GitHub
+Release](https://img.shields.io/github/v/release/umich-cphds/mianet?include_prereleases&label=Github&style=flat-square&color=blue)](https://github.com/umich-cphds/mianet)
+[![Travis
+CI](https://img.shields.io/travis/umich-cphds/mianet?style=flat-square)](https://travis-ci.org/umich-cphds/mianet)
+
+Stacked and Grouped Penalized Regression for Multiply Imputed Data
 ==================================================================
 
 Penalized regression methods, such as lasso and elastic net, are used in
@@ -9,7 +17,7 @@ missingness is handled using multiple imputation. Applying a variable
 selection algorithm on each imputed dataset will likely lead to
 different sets of selected predictors, making it difficult to ascertain
 a final active set without resorting to ad hoc combination rules.
-'mianet' presents Stacked Adaptive Elestic Net (saenet) and Grouped
+`mianet` presents Stacked Adaptive Elastic Net (saenet) and Grouped
 Adaptive LASSO (galasso) for continuous and binary outcomes. They, by
 construction, force selection of the same variables across multiply
 imputed data.
@@ -65,7 +73,8 @@ is that you can cross validate over `alpha` without having to use
     fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial",
                      alpha = alpha)
 
-    coef(fit)                 
+    # By default 'coef' returns the betas for (lambda.min , alpha.min)
+    coef(fit)
     #>  (Intercept)           X1           X2           X3           X4           X5 
     #>  0.075336069  1.465012227  0.773562992 -0.132892848  1.814095899  0.090605078 
     #>           X6           X7           X8           X9          X10          X11 
@@ -74,6 +83,19 @@ is that you can cross validate over `alpha` without having to use
     #> -0.001398250  0.000000000  0.000000000 -0.210676071  0.057351962  0.340355076 
     #>          X18          X19          X20 
     #>  0.071108301 -0.269948553  0.000000000
+
+You can supply different values of `lambda` and `alpha`. Here we use the
+`lambda` and `alpha` selected by the one standard error rule
+
+    coef(fit, lambda = fit$lambda.1se, alpha = fit$alpha.1se)
+    #> (Intercept)          X1          X2          X3          X4          X5 
+    #>  0.08216228  1.09429258  0.41249142  0.00000000  1.29535531  0.00000000 
+    #>          X6          X7          X8          X9         X10         X11 
+    #>  0.00000000  1.32200685  0.00000000  0.00000000  0.00000000  0.93730624 
+    #>         X12         X13         X14         X15         X16         X17 
+    #>  0.00000000  0.00000000  0.00000000 -0.01425428  0.00000000  0.11562370 
+    #>         X18         X19         X20 
+    #>  0.00000000 -0.11133637  0.00000000
 
 Bugs
 ----

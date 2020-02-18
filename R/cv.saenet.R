@@ -3,7 +3,11 @@
 #' Does k-fold cross-validation for \code{saenet}, and returns optimal values
 #' for lambda and alpha.
 #'
-#' TODO
+#' \code{cv.saenet} works by stacking the multiply imputed data into a single
+#' matrix and running a weighted adaptive elastic net on it. Simulations suggest
+#' that the "stacked" objective function approaches tend to be more
+#' computationally efficient and have better estimation and selection
+#' properties.
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
 #'     contain an intercept, or any missing values
 #' @param y A list of \code{m} length n numeric response vectors. No vector
@@ -78,23 +82,21 @@
 #' adWeight <- rep(1, 20)
 #'
 #' # Since 'Y' is a binary variable, we use 'family = "binomial"'
+#' \donttest{
 #' fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial")
 #'
-#' # Get selected variables from the 1 standard error rule
-#' i <- which(fit$lambda == fit$lambda.1se)
-#' j <- which(fit$alpha == fit$alpha.1se)
-#'
-#' coef <- fit$saenet.fit$beta[i, j, ]
+#' # By default 'coef' returns the betas for (lambda.min , alpha.min)
+#' coef(fit)
+#' }
 #'
 #' # You can also cross validate over alpha
+#' \donttest{
 #' fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial",
 #'                  alpha = c(.5, 1))
-#'
 #' # Get selected variables from the 1 standard error rule
-#' i <- which(fit$lambda == fit$lambda.1se)
-#' j <- which(fit$alpha == fit$alpha.1se)
+#' coef(fit, lambda = fit$lambda.1se, alpha = fit$alpha.1se)
 #'
-#' coef <- fit$saenet.fit$beta[i, j, ]
+#' }
 #' @export
 cv.saenet <- function(x, y, pf, adWeight, weights, family =
                       c("gaussian", "binomial"), alpha = 1, nlambda = 100,

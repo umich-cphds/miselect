@@ -65,12 +65,15 @@ Both subtypes have 4 elements:
 }
 }
 \description{
-Fits an adaptive LASSO for multiply imputed data. The group penalty ensures
-that each imputation selects the same betas at each value of lambda.
-"galasso" supports both continuous and binary responses.
+Fits an adaptive LASSO for multiply imputed data. "galasso" supports both
+continuous and binary responses.
 }
 \details{
-TODO
+\code{galasso} works by adding a group penalty to the aggregated objective
+function to ensure selection consistency across imputations. Simulations
+suggest that the "stacked" objective function approaches (i.e., \code{saenet})
+tend to be more computationally efficient and have better estimation and
+selection properties.
 }
 \examples{
 library(mianet)

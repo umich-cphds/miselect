@@ -78,7 +78,11 @@ Does k-fold cross-validation for \code{galasso}, and returns an optimal value
 for lambda.
 }
 \details{
-TODO
+\code{cv.galasso} works by adding a group penalty to the aggregated objective
+function to ensure selection consistency across imputations. Simulations
+suggest that the "stacked" objective function approaches (i.e., \code{saenet})
+tend to be more computationally efficient and have better estimation and
+selection properties.
 }
 \examples{
 library(mianet)
@@ -104,9 +108,8 @@ adWeight <- rep(1, 20)
 \donttest{
 fit <- cv.galasso(x,y, pf, adWeight, family = "binomial")
 
-# Get selected variables from the 1 standard error rule
-i <- which(fit$lambda == fit$lambda.1se)
-coef <- fit$galasso.fit$beta[i,]
+# By default 'coef' returns the betas for (lambda.min , alpha.min)
+coef(fit)
 }
 }
 \references{

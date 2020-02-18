@@ -1,10 +1,13 @@
 #' Multiple Imputation Grouped Adaptive LASSO
 #'
-#' Fits an adaptive LASSO for multiply imputed data. The group penalty ensures
-#' that each imputation selects the same betas at each value of lambda.
-#' "galasso" supports both continuous and binary responses.
+#' Fits an adaptive LASSO for multiply imputed data. "galasso" supports both
+#' continuous and binary responses.
 #'
-#' TODO
+#' \code{galasso} works by adding a group penalty to the aggregated objective
+#' function to ensure selection consistency across imputations. Simulations
+#' suggest that the "stacked" objective function approaches (i.e., \code{saenet})
+#' tend to be more computationally efficient and have better estimation and
+#' selection properties.
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
 #'     contain an intercept, or any missing values
 #' @param y A list of \code{m} length n numeric response vectors. No vector

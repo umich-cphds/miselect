@@ -3,7 +3,11 @@
 #' Does k-fold cross-validation for \code{galasso}, and returns an optimal value
 #' for lambda.
 #'
-#' TODO
+#' \code{cv.galasso} works by adding a group penalty to the aggregated objective
+#' function to ensure selection consistency across imputations. Simulations
+#' suggest that the "stacked" objective function approaches (i.e., \code{saenet})
+#' tend to be more computationally efficient and have better estimation and
+#' selection properties.
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
 #'     contain an intercept, or any missing values
 #' @param y A list of \code{m} length n numeric response vectors. No vector
@@ -68,9 +72,8 @@
 #' \donttest{
 #' fit <- cv.galasso(x,y, pf, adWeight, family = "binomial")
 #'
-#' # Get selected variables from the 1 standard error rule
-#' i <- which(fit$lambda == fit$lambda.1se)
-#' coef <- fit$galasso.fit$beta[i,]
+#' # By default 'coef' returns the betas for (lambda.min , alpha.min)
+#' coef(fit)
 #' }
 #' @references
 #' TODO
