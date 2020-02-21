@@ -1,7 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\*.Rcheck
-^mianet*
+^miselect*
 ^.travis*
 cran-comments.md
 ^CRAN-RELEASE$

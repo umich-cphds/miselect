@@ -97,13 +97,13 @@ computationally efficient and have better estimation and selection
 properties.
 }
 \examples{
-library(mianet)
+library(miselect)
 library(mice)
 
 set.seed(48109)
 
 # Using the mice defaults for sake of example only.
-mids <- mice(mianet.df, m = 5, printFlag = FALSE)
+mids <- mice(miselect.df, m = 5, printFlag = FALSE)
 dfs <- lapply(1:5, function(i) complete(mids, action = i))
 
 # Generate list of imputed design matrices and imputed responses
@@ -115,7 +115,7 @@ for (i in 1:5) {
 }
 
 # Calculate observational weights
-weights  <- 1 - rowMeans(is.na(mianet.df))
+weights  <- 1 - rowMeans(is.na(miselect.df))
 pf       <- rep(1, 20)
 adWeight <- rep(1, 20)
 
