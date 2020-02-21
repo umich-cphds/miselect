@@ -1,13 +1,13 @@
 <!-- Badges -->
 [![CRAN
-Version](https://img.shields.io/cran/v/mianet?style=flat-square&color=blue&label=CRAN)](https://cran.r-project.org/package=mianet)
+Version](https://img.shields.io/cran/v/miselect?style=flat-square&color=blue&label=CRAN)](https://cran.r-project.org/package=miselect)
 [![GitHub
-Release](https://img.shields.io/github/v/release/umich-cphds/mianet?include_prereleases&label=Github&style=flat-square&color=blue)](https://github.com/umich-cphds/mianet)
+Release](https://img.shields.io/github/v/release/umich-cphds/miselect?include_prereleases&label=Github&style=flat-square&color=blue)](https://github.com/umich-cphds/miselect)
 [![Travis
-CI](https://img.shields.io/travis/umich-cphds/mianet?style=flat-square)](https://travis-ci.org/umich-cphds/mianet)
+CI](https://img.shields.io/travis/umich-cphds/miselect?style=flat-square)](https://travis-ci.org/umich-cphds/mianet)
 
-Stacked and Grouped Penalized Regression for Multiply Imputed Data
-==================================================================
+Variable Selection for Multiply Imputed Data
+============================================
 
 Penalized regression methods, such as lasso and elastic net, are used in
 many biomedical applications when simultaneous regression coefficient
@@ -17,7 +17,7 @@ missingness is handled using multiple imputation. Applying a variable
 selection algorithm on each imputed dataset will likely lead to
 different sets of selected predictors, making it difficult to ascertain
 a final active set without resorting to ad hoc combination rules.
-`mianet` presents Stacked Adaptive Elastic Net (saenet) and Grouped
+'miselect' presents Stacked Adaptive Elastic Net (saenet) and Grouped
 Adaptive LASSO (galasso) for continuous and binary outcomes. They, by
 construction, force selection of the same variables across multiply
 imputed data.
@@ -25,10 +25,10 @@ imputed data.
 Installation
 ------------
 
-`mianet` can installed from Github via
+`miselect` can installed from Github via
 
     # install.packages("devtools")
-    devtools::install_github("umich-cphds/mianet", build_opts = c())
+    devtools::install_github("umich-cphds/miselect", build_opts = c())
 
 The Github version may contain bug fixes not yet present on CRAN, so if
 you are experiencing issues, you may want to try the Github version of
@@ -41,7 +41,7 @@ Here is how to use cross validated `saenet`. A nice feature of `saenet`
 is that you can cross validate over `alpha` without having to use
 `foldid`.
 
-    library(mianet)
+    library(miselect)
     library(mice)
     #> Loading required package: lattice
     #> 
@@ -52,7 +52,7 @@ is that you can cross validate over `alpha` without having to use
 
     set.seed(48109)
     # Using the mice defaults for sake of example only.
-    mids <- mice(mianet.df, m = 5, printFlag = FALSE)
+    mids <- mice(miselect.df, m = 5, printFlag = FALSE)
     dfs <- lapply(1:5, function(i) complete(mids, action = i))
 
     # Generate list of imputed design matrices and imputed responses
@@ -64,7 +64,7 @@ is that you can cross validate over `alpha` without having to use
     }
 
     # Calculate observational weights
-    weights  <- 1 - rowMeans(is.na(mianet.df))
+    weights  <- 1 - rowMeans(is.na(miselect.df))
     pf       <- rep(1, 20)
     adWeight <- rep(1, 20)
     alpha    <- c(.5 , 1)
@@ -101,8 +101,8 @@ Bugs
 ----
 
 If you encounter a bug, please open an issue on the
-[Issues](https://github.com/umich-cphds/mianet/issues) tab on Github or
-send us an email.
+[Issues](https://github.com/umich-cphds/miselect/issues) tab on Github
+or send us an email.
 
 Contact
 -------

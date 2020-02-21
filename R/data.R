@@ -7,4 +7,4 @@
 #'   \item{Y}{Binary response.}
 #'   \item{X1-X20}{Covariates with missing data.}
 #' }
-"mianet.df"
+"miselect.df"

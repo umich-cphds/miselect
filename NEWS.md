@@ -1,2 +1,2 @@
-# mianet v0.5
-* Beta version of mianet
+# miselect v0.7
+* Beta version of miselect

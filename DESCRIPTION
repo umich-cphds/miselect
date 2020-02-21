@@ -1,5 +1,5 @@
-Package: mianet
-Title: Stacked and Grouped Penalized Regression for Multiply Imputed Data
+Package: miselect
+Title: Variable Selection for Multiply Imputed Data
 Version: 0.7.0
 Authors@R: c(
     person("Alexander", "Rix", email = "alexrix@umich.edu", role = c("aut", "cre")),
@@ -14,7 +14,7 @@ Description:
     selection algorithm on each imputed dataset will likely lead
     to different sets of selected predictors, making it difficult
     to ascertain a final active set without resorting to ad hoc
-    combination rules. 'mianet' presents Stacked Adaptive Elastic Net (saenet)
+    combination rules. 'miselect' presents Stacked Adaptive Elastic Net (saenet)
     and Grouped Adaptive LASSO (galasso) for continuous and binary outcomes.
     They, by construction, force selection of the same variables across
     multiply imputed data.
