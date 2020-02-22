@@ -1,11 +1,16 @@
 ---
 title: "Variable Selection for Multiply Imputed Data"
+author: |
+    | Alexander Rix
+    | Center For Precision Health Data Science
+    | Department of Biostatistics
+    | University of Michigan School of Public Health
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{miselect}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+    %\VignetteIndexEntry{miselect}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
