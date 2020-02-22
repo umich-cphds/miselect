@@ -17,7 +17,8 @@ Description:
     combination rules. 'miselect' presents Stacked Adaptive Elastic Net (saenet)
     and Grouped Adaptive LASSO (galasso) for continuous and binary outcomes.
     They, by construction, force selection of the same variables across
-    multiply imputed data.
+    multiply imputed data. 'miselect' also provides cross validated variants of
+    these methods.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

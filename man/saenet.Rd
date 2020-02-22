@@ -4,20 +4,9 @@
 \alias{saenet}
 \title{Multiple Imputation Stacked Adaptive Elastic Net}
 \usage{
-saenet(
-  x,
-  y,
-  pf,
-  adWeight,
-  weights,
-  family = c("gaussian", "binomial"),
-  alpha = 1,
-  nlambda = 100,
-  lambda.min.ratio = 0.001,
-  lambda = NULL,
-  maxit = 1000,
-  eps = 1e-05
-)
+saenet(x, y, pf, adWeight, weights, family = c("gaussian", "binomial"),
+  alpha = 1, nlambda = 100, lambda.min.ratio = 0.001,
+  lambda = NULL, maxit = 1000, eps = 1e-05)
 }
 \arguments{
 \item{x}{A list of \code{m} \code{n x p} numeric matrices. No matrix should
@@ -79,7 +68,7 @@ of lambda. "saenet" supports both continuous and binary responses.
 \details{
 \code{saenet} works by stacking the multiply imputed data into a single
 matrix and running a weighted adaptive elastic net on it. Simulations suggest
-that the "stacked" objective function approaches tend to be more
+that the "stacked" objective function approach tends to be more
 computationally efficient and have better estimation and selection
 properties.
 }

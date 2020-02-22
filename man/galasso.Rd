@@ -4,18 +4,9 @@
 \alias{galasso}
 \title{Multiple Imputation Grouped Adaptive LASSO}
 \usage{
-galasso(
-  x,
-  y,
-  pf,
-  adWeight,
-  family = c("gaussian", "binomial"),
-  nlambda = 100,
-  lambda.min.ratio = 0.001,
-  lambda = NULL,
-  maxit = 1000,
-  eps = 1e-05
-)
+galasso(x, y, pf, adWeight, family = c("gaussian", "binomial"),
+  nlambda = 100, lambda.min.ratio = 0.001, lambda = NULL,
+  maxit = 1000, eps = 1e-05)
 }
 \arguments{
 \item{x}{A list of \code{m} \code{n x p} numeric matrices. No matrix should
@@ -71,8 +62,8 @@ continuous and binary responses.
 \details{
 \code{galasso} works by adding a group penalty to the aggregated objective
 function to ensure selection consistency across imputations. Simulations
-suggest that the "stacked" objective function approaches (i.e., \code{saenet})
-tend to be more computationally efficient and have better estimation and
+suggest that the "stacked" objective function approach (i.e., \code{saenet})
+tends to be more computationally efficient and have better estimation and
 selection properties.
 }
 \examples{

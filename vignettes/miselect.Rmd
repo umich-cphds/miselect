@@ -19,14 +19,21 @@ Penalized regression methods, such as lasso and elastic net, are used in
 many biomedical applications when simultaneous regression coefficient
 estimation and variable selection is desired. However, missing data
 complicates the implementation of these methods, particularly when
-missingness is handled using multiple imputation. Applying a variable
-selection algorithm on each imputed dataset will likely lead
-to different sets of selected predictors, making it difficult
-to ascertain a final active set without resorting to ad hoc
-combination rules. `miselect` presents Stacked Adaptive Elastic Net (saenet)
-and Grouped Adaptive LASSO (galasso) for continuous and binary outcomes.
-They, by construction, force selection of the same variables across
-multiply imputed data.
+missingness is handled using multiple imputation. Applying a variable selection
+algorithm on each imputed dataset will likely lead to different sets of selected
+predictors, making it difficult to ascertain a final active set without
+resorting to ad hoc combination rules. 'miselect' presents Stacked Adaptive
+Elastic Net (saenet) and Grouped Adaptive LASSO (galasso) for continuous and
+binary outcomes. They, by construction, force selection of the same variables
+across multiply imputed data. 'miselect' also provides cross validated variants
+of these methods.
+
+`saenet` works by stacking the multiply imputed data into a single matrix and
+running a weighted adaptive elastic net on it. `galasso` works by adding a
+group penalty to the aggregated objective function to ensure selection
+consistency across imputations. Simulations suggest that the "stacked"
+objective function approach (i.e., `saenet`) tends to be more computationally
+efficient and have better estimation and selection properties.
 
 ## Installation
 
@@ -41,16 +48,38 @@ version of the package.
 
 ## Example
 
-Here is how to use cross validated `saenet`. A nice feature of `saenet`
-is that you can cross validate over `alpha` without having to use `foldid`.
+The purpose of this example is to help the user get started with using the
+methods in the package. To facilitate this, we have included a synthetic
+example dataset in the package, `miselect.df`, which contains a binary response,
+`Y` and 20 continuous covariates, `X[1-20]`.
 
 ```{r}
 library(miselect)
+
+colMeans(is.na(miselect.df))
+```
+
+As you can see, this dataset includes missing values, so we need to impute it
+using the R package `mice`. Imputation should be done carefully to avoid
+creating biases in the imputed data that could affect the actual analysis of
+interest. There are many tutorials available on how to do this properly, but a
+good reference text is (Little and Rubin 2019).
+
+However, for the sake of example, we are going to just use the default `mice`
+settings, i.e., predictive means matching.
+```{r}
 library(mice)
 
 set.seed(48109)
+
 # Using the mice defaults for sake of example only.
 mids <- mice(miselect.df, m = 5, printFlag = FALSE)
+```
+
+Both `saenet` and `galasso` take lists of (imputed) design matrices and
+responses. Manipulating the mice output into this form is not too difficult.
+```{r}
+# Generate list of completed data.frames
 dfs <- lapply(1:5, function(i) complete(mids, action = i))
 
 # Generate list of imputed design matrices and imputed responses
@@ -61,6 +90,9 @@ for (i in 1:5) {
     y[[i]] <- dfs[[i]]$Y
 }
 
+```
+
+```{r}
 # Calculate observational weights
 weights  <- 1 - rowMeans(is.na(miselect.df))
 pf       <- rep(1, 20)
@@ -69,16 +101,36 @@ alpha    <- c(.5 , 1)
 
 # Since 'Y' is a binary variable, we use 'family = "binomial"'
 fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial",
-                 alpha = alpha)
+                 alpha = alpha, nfolds = 5)
 
 # By default 'coef' returns the betas for (lambda.min , alpha.min)
 coef(fit)
 ```
+`coef`, by default, returns the coefficients for the `lambda` / `alpha`
+that has the lowest cross validation error.
+
 You can supply different values of `lambda` and `alpha`. Here we use the
 `lambda` and `alpha` selected by the one standard error rule
 ```{r}
 coef(fit, lambda = fit$lambda.1se, alpha = fit$alpha.1se)
 ```
+
+Note that the adaptive weights (`adWeight`) are all `1`, so `fit` was just an
+elastic net. Let's use the coefficients from it as adaptive weights. The first
+term is the intercept, so we drop it.
+
+```{r}
+adWeight <- 1 / (abs(coef(fit)[-1]) + 1 / nrow(miselect.df))
+
+afit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial",
+                  alpha = alpha, nfolds = 5)
+
+coef(afit)
+```
+
+`galasso` works similarly to `saenet`, but does not have `weights`, or `alpha`
+parameters.
+
 ## Bugs
 If you encounter a bug, please open an issue on the [Issues](https://github.com/umich-cphds/miselect/issues)
 tab on Github or send us an email.
@@ -88,3 +140,6 @@ For questions or feedback, please email Jiacong Du at
 <jiacong@umich.edu> or Alexander Rix <alexrix@umich.edu>.
 
 ## References
+
+Little, R. J., & Rubin, D. B. (2019). Statistical analysis with missing data
+(Vol. 793). John Wiley & Sons.

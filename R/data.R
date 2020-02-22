@@ -1,6 +1,6 @@
-#' Synthetic Example Data For mianet
+#' Synthetic Example Data For 'miselect'
 #'
-#' This synthetic data is taken from the first simulation case from the mianet
+#' This synthetic data is taken from the first simulation case from the miselect
 #' paper
 #' @format A data.frame with 500 observations on 21 variables:
 #' \describe{

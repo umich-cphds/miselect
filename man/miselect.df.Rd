@@ -3,7 +3,7 @@
 \docType{data}
 \name{miselect.df}
 \alias{miselect.df}
-\title{Synthetic Example Data For mianet}
+\title{Synthetic Example Data For 'miselect'}
 \format{A data.frame with 500 observations on 21 variables:
 \describe{
   \item{Y}{Binary response.}
@@ -13,7 +13,7 @@
 miselect.df
 }
 \description{
-This synthetic data is taken from the first simulation case from the mianet
+This synthetic data is taken from the first simulation case from the miselect
 paper
 }
 \keyword{datasets}

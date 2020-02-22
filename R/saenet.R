@@ -6,7 +6,7 @@
 #'
 #' \code{saenet} works by stacking the multiply imputed data into a single
 #' matrix and running a weighted adaptive elastic net on it. Simulations suggest
-#' that the "stacked" objective function approaches tend to be more
+#' that the "stacked" objective function approach tends to be more
 #' computationally efficient and have better estimation and selection
 #' properties.
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
@@ -100,8 +100,19 @@ saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial
     if (any(sapply(y, function(y) !is.numeric(y) || !is.vector(y))))
             stop("Every 'y' should be a numeric vector.")
 
+    if (!is.numeric(pf) || !is.vector(pf) || any(pf < 0) || length(pf) != p)
+    {
+        stop("'pf' must be a non negative numeric vector of length p.")
+    }
+
+    if (!is.numeric(adWeight) || !is.vector(adWeight) || any(adWeight < 0) ||
+        length(adWeight) != p)
+    {
+        stop("'adWeight' must be a non negative numeric vector of length p.")
+    }
+
     if (!is.numeric(weights) || !is.vector(weights) || any(weights < 0) ||
-        length(y[[1]]) != length(weights))
+        length(weights) != n)
     {
         stop("'weights' must be a non negative numeric vector of length n.")
     }

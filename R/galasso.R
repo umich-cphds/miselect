@@ -5,8 +5,8 @@
 #'
 #' \code{galasso} works by adding a group penalty to the aggregated objective
 #' function to ensure selection consistency across imputations. Simulations
-#' suggest that the "stacked" objective function approaches (i.e., \code{saenet})
-#' tend to be more computationally efficient and have better estimation and
+#' suggest that the "stacked" objective function approach (i.e., \code{saenet})
+#' tends to be more computationally efficient and have better estimation and
 #' selection properties.
 #' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
 #'     contain an intercept, or any missing values

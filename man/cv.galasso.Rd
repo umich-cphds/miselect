@@ -4,20 +4,9 @@
 \alias{cv.galasso}
 \title{Cross Validated Multiple Imputation Grouped Adaptive LASSO}
 \usage{
-cv.galasso(
-  x,
-  y,
-  pf,
-  adWeight,
-  family = c("gaussian", "binomial"),
-  nlambda = 100,
-  lambda.min.ratio = 1e-04,
-  lambda = NULL,
-  nfolds = 10,
-  foldid = NULL,
-  maxit = 1000,
-  eps = 1e-05
-)
+cv.galasso(x, y, pf, adWeight, family = c("gaussian", "binomial"),
+  nlambda = 100, lambda.min.ratio = 1e-04, lambda = NULL,
+  nfolds = 10, foldid = NULL, maxit = 1000, eps = 1e-05)
 }
 \arguments{
 \item{x}{A list of \code{m} \code{n x p} numeric matrices. No matrix should
