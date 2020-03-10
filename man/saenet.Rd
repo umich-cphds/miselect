@@ -4,16 +4,27 @@
 \alias{saenet}
 \title{Multiple Imputation Stacked Adaptive Elastic Net}
 \usage{
-saenet(x, y, pf, adWeight, weights, family = c("gaussian", "binomial"),
-  alpha = 1, nlambda = 100, lambda.min.ratio = 0.001,
-  lambda = NULL, maxit = 1000, eps = 1e-05)
+saenet(
+  x,
+  y,
+  pf,
+  adWeight,
+  weights,
+  family = c("gaussian", "binomial"),
+  alpha = 1,
+  nlambda = 100,
+  lambda.min.ratio = ifelse(all.equal(adWeight, rep(1, p)), 0.001, 1e-06),
+  lambda = NULL,
+  maxit = 1000,
+  eps = 1e-05
+)
 }
 \arguments{
-\item{x}{A list of \code{m} \code{n x p} numeric matrices. No matrix should
-contain an intercept, or any missing values}
+\item{x}{A length \code{m} list of \code{n * p} numeric matrices. No matrix
+should contain an intercept, or any missing values}
 
-\item{y}{A list of \code{m} length n numeric response vectors. No vector
-should contain missing values}
+\item{y}{A length \code{m} list of length \code{n} numeric response vectors.
+No vector should contain missing values}
 
 \item{pf}{Penalty factor. Can be used to differentially penalize certain
 variables}
@@ -67,10 +78,17 @@ of lambda. "saenet" supports both continuous and binary responses.
 }
 \details{
 \code{saenet} works by stacking the multiply imputed data into a single
-matrix and running a weighted adaptive elastic net on it. Simulations suggest
-that the "stacked" objective function approach tends to be more
-computationally efficient and have better estimation and selection
-properties.
+matrix and running a weighted adaptive elastic net on it. The objective
+function is:
+\deqn{ argmin_{\beta_j} -\frac{1}{n} \sum_{k=1}^{m} \sum_{i=1}^{n} o_i * L(\beta_j|Y_{ik},X_{ijk})}
+\deqn{ + \lambda (\alpha \sum_{j=1}^{p} \hat{a}_j * pf_j |\beta_{j}|}
+\deqn{+ (1 - \alpha)\sum_{j=1}^{p} pf_j * \beta_{j}^2)}
+Where L is the log likelihood, \code{o = w / m}, \code{a} is the
+adaptive weights, and \code{pf} is the penalty factor. Simulations suggest
+that the "stacked" objective function approach (i.e., \code{saenet}) tends
+to be more computationally efficient and have better estimation and selection
+properties. However, the advantage of \code{galasso} is that it allows one
+to look at the differences between coefficient estimates across imputations.
 }
 \examples{
 library(miselect)

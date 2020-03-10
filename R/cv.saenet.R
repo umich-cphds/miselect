@@ -8,12 +8,12 @@
 #' that the "stacked" objective function approaches tend to be more
 #' computationally efficient and have better estimation and selection
 #' properties.
-#' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
-#'     contain an intercept, or any missing values
-#' @param y A list of \code{m} length n numeric response vectors. No vector
-#'     should contain missing values
-#' @param pf Penalty factor. Can be used to differentially penalize certain
-#'     variables
+#' @param x A length \code{m} list of \code{n * p} numeric matrices. No matrix
+#'     should contain an intercept, or any missing values
+#' @param y A length \code{m} list of length \code{n} numeric response vectors.
+#'     No vector should contain missing values
+#' @param pf Penalty factor of length \code{p}. Can be used to differentially
+#'     penalize certain variables. 0 indicates to not penalize the covariate
 #' @param adWeight Numeric vector of length p representing the adaptive weights
 #'     for the L1 penalty
 #' @param weights Numeric vector of length n containing the proportion observed
@@ -30,11 +30,11 @@
 #' @param lambda Optional numeric vector of lambdas to fit. If NULL,
 #'    \code{galasso} will automatically generate a lambda sequence based off
 #'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
-#' @param nfolds Number of foldid to use for cross validation. Default is 10,
+#' @param nfolds Number of foldid to use for cross validation. Default is 5,
 #'     minimum is 3
-#' @param foldid an optional vector of values between 1 and ‘nfold’
-#' identifying what fold each observation is in. Default is NULL and
-#' \code{cv.saenet} will automatically generate folds
+#' @param foldid an optional length \code{n} vector of values between 1 and
+#     ‘nfold’ identifying what fold each observation is in. Default is NULL and
+#'     \code{cv.galasso} will automatically generate folds
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return An object of type "cv.saenet" with 9 elements:
@@ -100,7 +100,7 @@
 #' @export
 cv.saenet <- function(x, y, pf, adWeight, weights, family =
                       c("gaussian", "binomial"), alpha = 1, nlambda = 100,
-                      lambda.min.ratio = 1e-3, lambda = NULL, nfolds = 10,
+                      lambda.min.ratio = 1e-3, lambda = NULL, nfolds = 5,
                       foldid = NULL, maxit = 1000, eps = 1e-5)
 {
 

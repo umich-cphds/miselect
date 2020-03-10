@@ -4,8 +4,7 @@
 \alias{coef.cv.saenet}
 \title{Extract Coefficients From a 'cv.saenet' Object}
 \usage{
-\method{coef}{cv.saenet}(object, lambda = object$lambda.min,
-  alpha = object$alpha.min, ...)
+\method{coef}{cv.saenet}(object, lambda = object$lambda.min, alpha = object$alpha.min, ...)
 }
 \arguments{
 \item{object}{A 'cv.saenet' fit}

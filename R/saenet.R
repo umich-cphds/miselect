@@ -5,14 +5,21 @@
 #' of lambda. "saenet" supports both continuous and binary responses.
 #'
 #' \code{saenet} works by stacking the multiply imputed data into a single
-#' matrix and running a weighted adaptive elastic net on it. Simulations suggest
-#' that the "stacked" objective function approach tends to be more
-#' computationally efficient and have better estimation and selection
-#' properties.
-#' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
-#'     contain an intercept, or any missing values
-#' @param y A list of \code{m} length n numeric response vectors. No vector
-#'     should contain missing values
+#' matrix and running a weighted adaptive elastic net on it. The objective
+#' function is:
+#' \deqn{ argmin_{\beta_j} -\frac{1}{n} \sum_{k=1}^{m} \sum_{i=1}^{n} o_i * L(\beta_j|Y_{ik},X_{ijk})}
+#' \deqn{ + \lambda (\alpha \sum_{j=1}^{p} \hat{a}_j * pf_j |\beta_{j}|}
+#' \deqn{+ (1 - \alpha)\sum_{j=1}^{p} pf_j * \beta_{j}^2)}
+#' Where L is the log likelihood, \code{o = w / m}, \code{a} is the
+#' adaptive weights, and \code{pf} is the penalty factor. Simulations suggest
+#' that the "stacked" objective function approach (i.e., \code{saenet}) tends
+#' to be more computationally efficient and have better estimation and selection
+#' properties. However, the advantage of \code{galasso} is that it allows one
+#' to look at the differences between coefficient estimates across imputations.
+#' @param x A length \code{m} list of \code{n * p} numeric matrices. No matrix
+#'     should contain an intercept, or any missing values
+#' @param y A length \code{m} list of length \code{n} numeric response vectors.
+#'     No vector should contain missing values
 #' @param pf Penalty factor. Can be used to differentially penalize certain
 #'     variables
 #' @param adWeight Numeric vector of length p representing the adaptive weights
@@ -75,8 +82,9 @@
 #' TODO
 #' @export
 saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial"),
-                   alpha = 1, nlambda = 100, lambda.min.ratio = 1e-3,
-                   lambda = NULL, maxit = 1000, eps = 1e-5)
+                   alpha = 1, nlambda = 100, lambda.min.ratio =
+                   ifelse(all.equal(adWeight, rep(1, p)), 1e-3, 1e-6), lambda =
+                   NULL, maxit = 1000, eps = 1e-5)
 {
     if (!is.list(x))
         stop("'x' should be a list of numeric matrices.")
@@ -140,17 +148,13 @@ saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial
     X <- scale(X, scale = apply(X, 2, function(.X) stats::sd(.X) * sqrt(m)))
 
     if (is.null(lambda)) {
-        wY_X <- (t(Y * weights) %*% X) / (n * adWeight * mean(alpha)) * pf
+        wY_X <- (t(Y * weights) %*% X) / (n * adWeight * max(min(alpha), 0.01)) * pf
         lambda.max <- max(abs(wY_X))
 
-        if (all(adWeight == rep(1, p)))
-            lambda <- exp(seq(log(lambda.max),
-                              log(lambda.max * lambda.min.ratio),
-                              length.out = nlambda))
-        else
-            lambda <- exp(seq(log(lambda.max),
-                          log(lambda.max * lambda.min.ratio / 100),
+        lambda <- exp(seq(log(lambda.max),
+                          log(lambda.max * lambda.min.ratio),
                           length.out = nlambda))
+
     } else {
         if (!is.numeric(lambda) || !is.vector(lambda))
             stop("'lambda' must be a numeric vector.")
@@ -244,7 +248,7 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
             fit <- fit.model(L1, L2)
             beta[i, j, ] <- fit$coef
             dev[i, j]    <- fit$dev
-            df[i, j]     <- sum(beta[i, j,] != 0)
+            df[i, j]     <- sum(beta[i, j, -1] != 0)
         }
     }
 
@@ -313,7 +317,7 @@ fit.saenet.gaussian <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
             fit <- fit.model(L1, L2)
             beta[i, j, ] <- fit$coef
             mse[i, j]    <- fit$mse
-            df[i, j]     <- sum(beta[i, j,] != 0)
+            df[i, j]     <- sum(beta[i, j, -1] != 0)
         }
     }
 

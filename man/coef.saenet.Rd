@@ -18,5 +18,6 @@
 \item{...}{Additional unused arguments}
 }
 \description{
-Extract Coefficients From a 'saenet' Object
+\code{coef.galasso} averages the estimates across imputations to return a
+single vector instead of a matrix.
 }

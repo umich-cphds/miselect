@@ -4,20 +4,32 @@
 \alias{cv.saenet}
 \title{Cross Validated Multiple Imputation Stacked Adaptive Elastic Net}
 \usage{
-cv.saenet(x, y, pf, adWeight, weights, family = c("gaussian",
-  "binomial"), alpha = 1, nlambda = 100, lambda.min.ratio = 0.001,
-  lambda = NULL, nfolds = 10, foldid = NULL, maxit = 1000,
-  eps = 1e-05)
+cv.saenet(
+  x,
+  y,
+  pf,
+  adWeight,
+  weights,
+  family = c("gaussian", "binomial"),
+  alpha = 1,
+  nlambda = 100,
+  lambda.min.ratio = 0.001,
+  lambda = NULL,
+  nfolds = 5,
+  foldid = NULL,
+  maxit = 1000,
+  eps = 1e-05
+)
 }
 \arguments{
-\item{x}{A list of \code{m} \code{n x p} numeric matrices. No matrix should
-contain an intercept, or any missing values}
+\item{x}{A length \code{m} list of \code{n * p} numeric matrices. No matrix
+should contain an intercept, or any missing values}
 
-\item{y}{A list of \code{m} length n numeric response vectors. No vector
-should contain missing values}
+\item{y}{A length \code{m} list of length \code{n} numeric response vectors.
+No vector should contain missing values}
 
-\item{pf}{Penalty factor. Can be used to differentially penalize certain
-variables}
+\item{pf}{Penalty factor of length \code{p}. Can be used to differentially
+penalize certain variables. 0 indicates to not penalize the covariate}
 
 \item{adWeight}{Numeric vector of length p representing the adaptive weights
 for the L1 penalty}
@@ -42,12 +54,11 @@ NULL, 'lambda.min.ratio' is ignored. Default is 1e-3}
 \code{galasso} will automatically generate a lambda sequence based off
 of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
 
-\item{nfolds}{Number of foldid to use for cross validation. Default is 10,
+\item{nfolds}{Number of foldid to use for cross validation. Default is 5,
 minimum is 3}
 
-\item{foldid}{an optional vector of values between 1 and ‘nfold’
-identifying what fold each observation is in. Default is NULL and
-\code{cv.saenet} will automatically generate folds}
+\item{foldid}{an optional length \code{n} vector of values between 1 and
+\code{cv.galasso} will automatically generate folds}
 
 \item{maxit}{Maximum number of iterations to run. Default is 1000}
 

@@ -1,17 +1,24 @@
 #' Multiple Imputation Grouped Adaptive LASSO
 #'
-#' Fits an adaptive LASSO for multiply imputed data. "galasso" supports both
-#' continuous and binary responses.
+#' \code{galasso} fits an adaptive LASSO for multiply imputed data. "galasso"
+#' supports both continuous and binary responses.
 #'
 #' \code{galasso} works by adding a group penalty to the aggregated objective
-#' function to ensure selection consistency across imputations. Simulations
-#' suggest that the "stacked" objective function approach (i.e., \code{saenet})
-#' tends to be more computationally efficient and have better estimation and
-#' selection properties.
-#' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
-#'     contain an intercept, or any missing values
-#' @param y A list of \code{m} length n numeric response vectors. No vector
-#'     should contain missing values
+#' function to ensure selection consistency across imputations. The objective
+#' function is:
+#'
+#' \deqn{argmin_{\beta_{jk}} - L(\beta_{jk}| X_{ijk}, Y_{ik})}
+#' \deqn{+ \lambda * \Sigma_{j=1}^{p} \hat{a}_j * pf_j * \sqrt{\Sigma_{k=1}^{m} \beta_{jk}^2}}
+#' Where L is the log likelihood,\code{a} is the adaptive weights, and
+#' \code{pf} is the penalty factor. Simulations suggest that the "stacked"
+#' objective function approach (i.e., \code{saenet}) tends to be more
+#' computationally efficient and have better estimation and selection
+#' properties. However, the advantage of \code{galasso} is that it allows one
+#' to look at the differences between coefficient estimates across imputations.
+#' @param x A length \code{m} list of \code{n * p} numeric matrices. No matrix
+#'     should contain an intercept, or any missing values
+#' @param y A length \code{m} list of length \code{n} numeric response vectors.
+#'     No vector should contain missing values
 #' @param pf Penalty factor. Can be used to differentially penalize certain
 #'     variables
 #' @param adWeight Numeric vector of length p representing the adaptive weights
@@ -69,8 +76,9 @@
 #' TODO
 #' @export
 galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
-                    nlambda = 100, lambda.min.ratio = 1e-3, lambda = NULL,
-                    maxit = 1000, eps = 1e-5)
+                    nlambda = 100, lambda.min.ratio =
+                    ifelse(all.equal(adWeight, rep(1, p)), 1e-3, 1e-6),
+                    lambda = NULL, maxit = 1000, eps = 1e-5)
 {
     if (!is.list(x))
         stop("'x' should be a list of numeric matrices.")
@@ -126,14 +134,9 @@ galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
         norm <- sqrt(apply(Y_X ^ 2, 2, sum))
         lambda.max <- max(norm / (n * adWeight * pf))
 
-        if (all(adWeight == rep(1, p)))
-            lambda <- exp(seq(log(lambda.max),
-                              log(lambda.max * lambda.min.ratio),
-                              length.out = nlambda))
-        else
-            lambda <- exp(seq(log(lambda.max),
-                              log(lambda.max * lambda.min.ratio / 100),
-                              length.out = nlambda))
+        lambda <- exp(seq(log(lambda.max),
+                          log(lambda.max * lambda.min.ratio),
+                          length.out = nlambda))
     } else {
         if (!is.numeric(lambda) || !is.vector(lambda))
             stop("'lambda' must be a numeric vector.")
@@ -245,7 +248,7 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, pf, maxit, eps)
         # start       <- fit$beta
         dev[i]      <- mean(fit$dev)
         beta[,, i]  <- fit$coef
-        df[i]       <- sum(beta[, 1, i] != 0)
+        df[i]       <- sum(beta[-1, 1, i] != 0)
     }
 
     structure(list(lambda = lambda, beta = beta, df = df, dev = dev),
@@ -323,7 +326,7 @@ fit.galasso.gaussian <- function(x, y, lambda, adWeight, pf, maxit, eps)
         # start <- fit$beta
         mse[i]   <- mean(fit$mse)
         beta[,,i] <- fit$coef
-        df[i]    <- sum(beta[, 1, i] != 0)
+        df[i]    <- sum(beta[-1, 1, i] != 0)
     }
     structure(list(lambda = lambda, beta = beta, df = df, mse = mse),
               class = c("galasso.gaussian", "galasso"))

@@ -34,6 +34,9 @@ coef.cv.saenet <- function(object, lambda = object$lambda.min,
 }
 
 #' Extract Coefficients From a 'saenet' Object
+#'
+#' \code{coef.galasso} averages the estimates across imputations to return a
+#' single vector instead of a matrix.
 #' @param object A 'cv.saenet' fit
 #' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
 #'     'max(lambda)'. Default is 'lambda.min'

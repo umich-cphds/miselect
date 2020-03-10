@@ -8,10 +8,10 @@
 #' suggest that the "stacked" objective function approaches (i.e., \code{saenet})
 #' tend to be more computationally efficient and have better estimation and
 #' selection properties.
-#' @param x A list of \code{m} \code{n x p} numeric matrices. No matrix should
-#'     contain an intercept, or any missing values
-#' @param y A list of \code{m} length n numeric response vectors. No vector
-#'     should contain missing values
+#' @param x A length \code{m} list of \code{n * p} numeric matrices. No matrix
+#'     should contain an intercept, or any missing values
+#' @param y A length \code{m} list of length \code{n} numeric response vectors.
+#'     No vector should contain missing values
 #' @param pf Penalty factor. Can be used to differentially penalize certain
 #'     variables
 #' @param adWeight Numeric vector of length p representing the adaptive weights
@@ -26,11 +26,11 @@
 #' @param lambda Optional numeric vector of lambdas to fit. If NULL,
 #'    \code{galasso} will automatically generate a lambda sequence based off
 #'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
-#' @param nfolds Number of foldid to use for cross validation. Default is 10,
+#' @param nfolds Number of foldid to use for cross validation. Default is 5,
 #'     minimum is 3
-#' @param foldid an optional vector of values between 1 and ‘nfold’
-#' identifying what fold each observation is in. Default is NULL and
-#' \code{cv.galasso} will automatically generate folds
+#' @param foldid an optional length \code{n} vector of values between 1 and
+#     ‘nfold’ identifying what fold each observation is in. Default is NULL and
+#'     \code{cv.galasso} will automatically generate folds
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return An object of type "cv.galasso" with 7 elements:
@@ -80,7 +80,7 @@
 #' @export
 cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                        nlambda = 100, lambda.min.ratio = 1e-4, lambda = NULL,
-                       nfolds = 10, foldid = NULL, maxit = 1000, eps = 1e-5)
+                       nfolds = 5, foldid = NULL, maxit = 1000, eps = 1e-5)
 {
 
     if (!is.numeric(nfolds) || length(nfolds) > 1)

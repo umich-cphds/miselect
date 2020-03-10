@@ -4,16 +4,25 @@
 \alias{galasso}
 \title{Multiple Imputation Grouped Adaptive LASSO}
 \usage{
-galasso(x, y, pf, adWeight, family = c("gaussian", "binomial"),
-  nlambda = 100, lambda.min.ratio = 0.001, lambda = NULL,
-  maxit = 1000, eps = 1e-05)
+galasso(
+  x,
+  y,
+  pf,
+  adWeight,
+  family = c("gaussian", "binomial"),
+  nlambda = 100,
+  lambda.min.ratio = ifelse(all.equal(adWeight, rep(1, p)), 0.001, 1e-06),
+  lambda = NULL,
+  maxit = 1000,
+  eps = 1e-05
+)
 }
 \arguments{
-\item{x}{A list of \code{m} \code{n x p} numeric matrices. No matrix should
-contain an intercept, or any missing values}
+\item{x}{A length \code{m} list of \code{n * p} numeric matrices. No matrix
+should contain an intercept, or any missing values}
 
-\item{y}{A list of \code{m} length n numeric response vectors. No vector
-should contain missing values}
+\item{y}{A length \code{m} list of length \code{n} numeric response vectors.
+No vector should contain missing values}
 
 \item{pf}{Penalty factor. Can be used to differentially penalize certain
 variables}
@@ -56,15 +65,22 @@ Both subtypes have 4 elements:
 }
 }
 \description{
-Fits an adaptive LASSO for multiply imputed data. "galasso" supports both
-continuous and binary responses.
+\code{galasso} fits an adaptive LASSO for multiply imputed data. "galasso"
+supports both continuous and binary responses.
 }
 \details{
 \code{galasso} works by adding a group penalty to the aggregated objective
-function to ensure selection consistency across imputations. Simulations
-suggest that the "stacked" objective function approach (i.e., \code{saenet})
-tends to be more computationally efficient and have better estimation and
-selection properties.
+function to ensure selection consistency across imputations. The objective
+function is:
+
+\deqn{argmin_{\beta_{jk}} - L(\beta_{jk}| X_{ijk}, Y_{ik})}
+\deqn{+ \lambda * \Sigma_{j=1}^{p} \hat{a}_j * pf_j * \sqrt{\Sigma_{k=1}^{m} \beta_{jk}^2}}
+Where L is the log likelihood,\code{a} is the adaptive weights, and
+\code{pf} is the penalty factor. Simulations suggest that the "stacked"
+objective function approach (i.e., \code{saenet}) tends to be more
+computationally efficient and have better estimation and selection
+properties. However, the advantage of \code{galasso} is that it allows one
+to look at the differences between coefficient estimates across imputations.
 }
 \examples{
 library(miselect)
