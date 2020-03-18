@@ -59,7 +59,8 @@ minimum is 3}
 \value{
 An object of type "cv.galasso" with 7 elements:
 \describe{
-\item{lambda}{Sequence of lambdas fit.}
+\item{call}{The call that generated the output.}
+\item{lambda}{The sequence of lambdas fit.}
 \item{cvm}{Average cross validation error for each 'lambda'. For
            family = "gaussian", 'cvm' corresponds to mean squared error,
            and for binomial 'cvm' corresponds to deviance.}
@@ -84,6 +85,7 @@ tend to be more computationally efficient and have better estimation and
 selection properties.
 }
 \examples{
+\donttest{
 library(miselect)
 library(mice)
 
@@ -104,7 +106,6 @@ for (i in 1:5) {
 pf       <- rep(1, 20)
 adWeight <- rep(1, 20)
 # Since 'Y' is a binary variable, we use 'family = "binomial"'
-\donttest{
 fit <- cv.galasso(x,y, pf, adWeight, family = "binomial")
 
 # By default 'coef' returns the betas for (lambda.min , alpha.min)
@@ -112,5 +113,8 @@ coef(fit)
 }
 }
 \references{
-TODO
+Variable selection with multiply-imputed datasets: choosing between stacked
+and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
+Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
+arXiv:2003.07398
 }

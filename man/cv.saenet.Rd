@@ -67,6 +67,7 @@ minimum is 3}
 \value{
 An object of type "cv.saenet" with 9 elements:
 \describe{
+\item{call}{The call that generated the output.}
 \item{lambda}{Sequence of lambdas fit.}
 \item{cvm}{Average cross validation error for each lambda and alpha. For
            family = "gaussian", 'cvm' corresponds to mean squared error,
@@ -94,8 +95,13 @@ matrix and running a weighted adaptive elastic net on it. Simulations suggest
 that the "stacked" objective function approaches tend to be more
 computationally efficient and have better estimation and selection
 properties.
+
+Due to stacking, the automatically generated \code{lambda} sequence
+\code{cv.saenet} generates may end up underestimating \code{lambda.max}, and
+thus the degrees of freedom  may be nonzero at the first lambda value.
 }
 \examples{
+\donttest{
 library(miselect)
 library(mice)
 
@@ -119,7 +125,6 @@ pf       <- rep(1, 20)
 adWeight <- rep(1, 20)
 
 # Since 'Y' is a binary variable, we use 'family = "binomial"'
-\donttest{
 fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial")
 
 # By default 'coef' returns the betas for (lambda.min , alpha.min)
@@ -136,5 +141,8 @@ coef(fit, lambda = fit$lambda.1se, alpha = fit$alpha.1se)
 }
 }
 \references{
-TODO
+Variable selection with multiply-imputed datasets: choosing between stacked
+and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
+Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
+arXiv:2003.07398
 }

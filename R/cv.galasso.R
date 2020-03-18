@@ -35,7 +35,8 @@
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return An object of type "cv.galasso" with 7 elements:
 #' \describe{
-#' \item{lambda}{Sequence of lambdas fit.}
+#' \item{call}{The call that generated the output.}
+#' \item{lambda}{The sequence of lambdas fit.}
 #' \item{cvm}{Average cross validation error for each 'lambda'. For
 #'            family = "gaussian", 'cvm' corresponds to mean squared error,
 #'            and for binomial 'cvm' corresponds to deviance.}
@@ -48,6 +49,7 @@
 #' \item{df}{The number of nonzero coefficients for each value of lambda.}
 #' }
 #' @examples
+#' \donttest{
 #' library(miselect)
 #' library(mice)
 #'
@@ -69,19 +71,22 @@
 #' adWeight <- rep(1, 20)
 
 #' # Since 'Y' is a binary variable, we use 'family = "binomial"'
-#' \donttest{
 #' fit <- cv.galasso(x,y, pf, adWeight, family = "binomial")
 #'
 #' # By default 'coef' returns the betas for (lambda.min , alpha.min)
 #' coef(fit)
 #' }
 #' @references
-#' TODO
+#' Variable selection with multiply-imputed datasets: choosing between stacked
+#' and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
+#' Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
+#' arXiv:2003.07398
 #' @export
 cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                        nlambda = 100, lambda.min.ratio = 1e-4, lambda = NULL,
                        nfolds = 5, foldid = NULL, maxit = 1000, eps = 1e-5)
 {
+    call <- match.call()
 
     if (!is.numeric(nfolds) || length(nfolds) > 1)
         stop("'nfolds' should a be single number.")
@@ -143,9 +148,9 @@ cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
     i <- which.min(fit$df[j])
     lambda.1se <- fit$lambda[j][i]
 
-    structure(list(lambda = fit$lambda, cvm = cvm, cvse = cvse, galasso.fit =
-                   fit, lambda.min = lambda.min, lambda.1se = lambda.1se, df =
-                   fit$df), class = "cv.galasso")
+    structure(list(call = call, lambda = fit$lambda, cvm = cvm, cvse = cvse,
+                   galasso.fit = fit, lambda.min = lambda.min, lambda.1se =
+                   lambda.1se, df = fit$df), class = "cv.galasso")
 }
 
 # cv.err.gaussian calculates the cross validation error for the gaussian family
@@ -185,4 +190,29 @@ cv.galasso.err.binomial <- function(cv.fit, x.test, y.test)
         }
     }
     cvm
+}
+
+
+#' Print cv.galasso Objects
+#'
+#' \code{print.cv.galasso} print the fit and returns it invisibly.
+#' @param x An object of type "cv.galasso" to print
+#' @param ... Further arguments passed to or from other methods
+#' @export
+print.cv.galasso <- function(x, ...)
+{
+    nl <- length(x$lambda)
+
+    out <- cbind(x$cvm, x$df)
+
+    dimnames(out) <- list(paste0("l.", seq(nl)), c("cvm", "df"))
+    cat("'cv.galasso' fit:\n")
+    print(x$call)
+    cat("Average cross validation error and df for each lambda\n")
+    print(out)
+    cat("lambda min:\n")
+    cat(x$lambda.min, "\n", sep = "")
+    cat("lambda 1 SE:\n")
+    cat(x$lambda.1se, "\n", sep = "")
+    invisible(x)
 }

@@ -55,6 +55,7 @@
 #'            for each value of lambda and alpha.}
 #' }
 #' @examples
+#' \donttest{
 #' library(miselect)
 #' library(mice)
 #'
@@ -75,11 +76,13 @@
 #' adWeight <- rep(1, 20)
 #'
 #' # Since 'Y' is a binary variable, we use 'family = "binomial"'
-#' \donttest{
 #' fit <- saenet(x, y, pf, adWeight, weights, family = "binomial")
 #' }
 #' @references
-#' TODO
+#' Variable selection with multiply-imputed datasets: choosing between stacked
+#' and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
+#' Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
+#' arXiv:2003.07398
 #' @export
 saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial"),
                    alpha = 1, nlambda = 100, lambda.min.ratio =
@@ -148,8 +151,16 @@ saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial
     X <- scale(X, scale = apply(X, 2, function(.X) stats::sd(.X) * sqrt(m)))
 
     if (is.null(lambda)) {
-        wY_X <- (t(Y * weights) %*% X) / (n * adWeight * max(min(alpha), 0.01)) * pf
-        lambda.max <- max(abs(wY_X))
+        wY_X <- NULL
+        if (match.arg(family) == "gaussian") {
+            wY_X <- apply(X, 2, function(x) sum(x * Y * weights))
+        }
+        else {
+            mu <- mean(Y)
+            wY_X <- t(ifelse(Y == 1, 1 - mu, - mu) * weights) %*% X
+        }
+        wY_X <- stats::na.omit(wY_X / (n * adWeight * max(min(alpha), 0.01) * pf))
+        lambda.max <- max(abs(wY_X) )
 
         lambda <- exp(seq(log(lambda.max),
                           log(lambda.max * lambda.min.ratio),
@@ -248,7 +259,7 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
             fit <- fit.model(L1, L2)
             beta[i, j, ] <- fit$coef
             dev[i, j]    <- fit$dev
-            df[i, j]     <- sum(beta[i, j, -1] != 0)
+            df[i, j]     <- sum(beta[i, j,] != 0) - 1
         }
     }
 
@@ -317,7 +328,7 @@ fit.saenet.gaussian <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
             fit <- fit.model(L1, L2)
             beta[i, j, ] <- fit$coef
             mse[i, j]    <- fit$mse
-            df[i, j]     <- sum(beta[i, j, -1] != 0)
+            df[i, j]     <- sum(beta[i, j, ] != 0) - 1
         }
     }
 

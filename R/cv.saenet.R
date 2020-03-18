@@ -8,6 +8,10 @@
 #' that the "stacked" objective function approaches tend to be more
 #' computationally efficient and have better estimation and selection
 #' properties.
+#'
+#' Due to stacking, the automatically generated \code{lambda} sequence
+#' \code{cv.saenet} generates may end up underestimating \code{lambda.max}, and
+#' thus the degrees of freedom  may be nonzero at the first lambda value.
 #' @param x A length \code{m} list of \code{n * p} numeric matrices. No matrix
 #'     should contain an intercept, or any missing values
 #' @param y A length \code{m} list of length \code{n} numeric response vectors.
@@ -39,6 +43,7 @@
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return An object of type "cv.saenet" with 9 elements:
 #' \describe{
+#' \item{call}{The call that generated the output.}
 #' \item{lambda}{Sequence of lambdas fit.}
 #' \item{cvm}{Average cross validation error for each lambda and alpha. For
 #'            family = "gaussian", 'cvm' corresponds to mean squared error,
@@ -57,8 +62,12 @@
 #' \item{df}{The number of nonzero coefficients for each value of lambda and alpha.}
 #' }
 #' @references
-#' TODO
+#' Variable selection with multiply-imputed datasets: choosing between stacked
+#' and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
+#' Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
+#' arXiv:2003.07398
 #' @examples
+#' \donttest{
 #' library(miselect)
 #' library(mice)
 #'
@@ -82,7 +91,6 @@
 #' adWeight <- rep(1, 20)
 #'
 #' # Since 'Y' is a binary variable, we use 'family = "binomial"'
-#' \donttest{
 #' fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial")
 #'
 #' # By default 'coef' returns the betas for (lambda.min , alpha.min)
@@ -103,6 +111,7 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family =
                       lambda.min.ratio = 1e-3, lambda = NULL, nfolds = 5,
                       foldid = NULL, maxit = 1000, eps = 1e-5)
 {
+    call <- match.call()
 
     if (!is.numeric(nfolds) || length(nfolds) > 1)
         stop("'nfolds' should a be single number.")
@@ -186,10 +195,10 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family =
     lambda.1se <- fit$lambda[row]
     alpha.1se  <- alpha[col]
 
-    structure(list(lambda = fit$lambda, alpha = alpha, cvm = cvm, cvse = cvse, saenet.fit =
-                   fit, lambda.min = lambda.min, alpha.min = alpha.min,
-                   lambda.1se = lambda.1se, alpha.1se = alpha.1se,
-                   df = fit$df), class = "cv.saenet")
+    structure(list(call = call, lambda = fit$lambda, alpha = alpha, cvm = cvm,
+                   cvse = cvse, saenet.fit = fit, lambda.min = lambda.min,
+                   alpha.min = alpha.min, lambda.1se = lambda.1se, alpha.1se =
+                   alpha.1se, df = fit$df), class = "cv.saenet")
 }
 
 
@@ -216,4 +225,29 @@ cv.saenet.err <- function(cv.fit, X.test, Y.test, w.test, m)
         }
     }
     cvm
+}
+
+
+#' Print cv.saenet Objects
+#'
+#' \code{print.cv.saenet} print the fit and returns it invisibly.
+#' @param x An object of type "cv.saenet" to print
+#' @param ... Further arguments passed to or from other methods
+#' @export
+print.cv.saenet <- function(x, ...)
+{
+    nl <- length(x$lambda)
+    na <- length(x$alpha)
+
+    cvm <- x$cvm
+    dimnames(cvm) <- list(paste0("l.", seq(nl)), paste0("a.", seq(na)))
+    cat("'cv.saenet' fit:\n")
+    print(x$call)
+    cat("Average cross validation error for each (lambda, alpha)\n")
+    print(cvm)
+    cat("(lambda, alpha) min:\n")
+    cat("(", x$lambda.min, ", ", x$alpha.min, ")\n", sep = "")
+    cat("(lambda, alpha) 1 SE:\n")
+    cat("(", x$lambda.1se, ", ", x$alpha.1se, ")\n", sep = "")
+    invisible(x)
 }

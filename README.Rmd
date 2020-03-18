@@ -90,4 +90,8 @@ tab on Github or send us an email.
 For questions or feedback, please email Jiacong Du at
 <jiacong@umich.edu> or Alexander Rix <alexrix@umich.edu>.
 
-<!-- ## References -->
+## References
+Variable selection with multiply-imputed datasets: choosing between stacked
+and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
+Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
+arXiv:2003.07398

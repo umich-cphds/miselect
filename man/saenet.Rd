@@ -91,6 +91,7 @@ properties. However, the advantage of \code{galasso} is that it allows one
 to look at the differences between coefficient estimates across imputations.
 }
 \examples{
+\donttest{
 library(miselect)
 library(mice)
 
@@ -111,10 +112,12 @@ pf       <- rep(1, 20)
 adWeight <- rep(1, 20)
 
 # Since 'Y' is a binary variable, we use 'family = "binomial"'
-\donttest{
 fit <- saenet(x, y, pf, adWeight, weights, family = "binomial")
 }
 }
 \references{
-TODO
+Variable selection with multiply-imputed datasets: choosing between stacked
+and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
+Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
+arXiv:2003.07398
 }

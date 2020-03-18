@@ -4,11 +4,13 @@
 \name{miselect.df}
 \alias{miselect.df}
 \title{Synthetic Example Data For 'miselect'}
-\format{A data.frame with 500 observations on 21 variables:
+\format{
+A data.frame with 500 observations on 21 variables:
 \describe{
   \item{Y}{Binary response.}
   \item{X1-X20}{Covariates with missing data.}
-}}
+}
+}
 \usage{
 miselect.df
 }

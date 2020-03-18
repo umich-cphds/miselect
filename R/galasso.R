@@ -51,6 +51,7 @@
 #'            for each value of lambda.}
 #' }
 #' @examples
+#' \donttest{
 #' library(miselect)
 #' library(mice)
 #'
@@ -69,11 +70,13 @@
 #' adWeight <- rep(1, 20)
 #'
 #' # Since 'Y' is a binary variable, we use 'family = "binomial"'
-#' \donttest{
 #' fit <- galasso(x, y, pf, adWeight, family = "binomial")
 #' }
 #' @references
-#' TODO
+#' Variable selection with multiply-imputed datasets: choosing between stacked
+#' and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
+#' Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
+#' arXiv:2003.07398
 #' @export
 galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                     nlambda = 100, lambda.min.ratio =
@@ -128,11 +131,18 @@ galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
 
     if (is.null(lambda)) {
         Y_X <- matrix(0, m, p)
-        for (i in seq(m))
-            Y_X[i,] <- t(y[[i]]) %*% x[[i]]
-
+        if (match.arg(family) == "gaussian") {
+            for (i in seq(m))
+                Y_X[i,] <- t(y[[i]]) %*% x[[i]]
+        }
+        else {
+            for (i in seq(m)) {
+                mu <- mean(y[[i]])
+                Y_X[i,] <- t(ifelse(y[[i]] == 1, 1 - mu, - mu)) %*% x[[i]]
+            }
+        }
         norm <- sqrt(apply(Y_X ^ 2, 2, sum))
-        lambda.max <- max(norm / (n * adWeight * pf))
+        lambda.max <- max(stats::na.omit(norm / (n * adWeight * pf)))
 
         lambda <- exp(seq(log(lambda.max),
                           log(lambda.max * lambda.min.ratio),

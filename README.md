@@ -20,7 +20,8 @@ a final active set without resorting to ad hoc combination rules.
 'miselect' presents Stacked Adaptive Elastic Net (saenet) and Grouped
 Adaptive LASSO (galasso) for continuous and binary outcomes. They, by
 construction, force selection of the same variables across multiply
-imputed data.
+imputed data. 'miselect' also provides cross validated variants of these
+methods.
 
 Installation
 ------------
@@ -43,7 +44,6 @@ is that you can cross validate over `alpha` without having to use
 
     library(miselect)
     library(mice)
-    #> Loading required package: lattice
     #> 
     #> Attaching package: 'mice'
     #> The following objects are masked from 'package:base':
@@ -75,27 +75,27 @@ is that you can cross validate over `alpha` without having to use
 
     # By default 'coef' returns the betas for (lambda.min , alpha.min)
     coef(fit)
-    #>  (Intercept)           X1           X2           X3           X4           X5 
-    #>  0.075336069  1.465012227  0.773562992 -0.132892848  1.814095899  0.090605078 
-    #>           X6           X7           X8           X9          X10          X11 
-    #>  0.000000000  1.803555612  0.002901045 -0.053939183 -0.090949859  1.314651703 
-    #>          X12          X13          X14          X15          X16          X17 
-    #> -0.001398250  0.000000000  0.000000000 -0.210676071  0.057351962  0.340355076 
-    #>          X18          X19          X20 
-    #>  0.071108301 -0.269948553  0.000000000
+    #> (Intercept)          X1          X2          X3          X4          X5 
+    #>  0.07500679  1.48805119  0.57645656  0.00000000  1.79085524  0.05315903 
+    #>          X6          X7          X8          X9         X10         X11 
+    #>  0.00000000  1.78466568  0.00000000 -0.01937788  0.00000000  1.29382032 
+    #>         X12         X13         X14         X15         X16         X17 
+    #>  0.00000000  0.00000000  0.00000000 -0.14915055  0.00000000  0.28699265 
+    #>         X18         X19         X20 
+    #>  0.00000000 -0.23440273  0.00000000
 
 You can supply different values of `lambda` and `alpha`. Here we use the
 `lambda` and `alpha` selected by the one standard error rule
 
     coef(fit, lambda = fit$lambda.1se, alpha = fit$alpha.1se)
     #> (Intercept)          X1          X2          X3          X4          X5 
-    #>  0.08216228  1.09429258  0.41249142  0.00000000  1.29535531  0.00000000 
+    #>   0.1180812   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000 
     #>          X6          X7          X8          X9         X10         X11 
-    #>  0.00000000  1.32200685  0.00000000  0.00000000  0.00000000  0.93730624 
+    #>   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000 
     #>         X12         X13         X14         X15         X16         X17 
-    #>  0.00000000  0.00000000  0.00000000 -0.01425428  0.00000000  0.11562370 
+    #>   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000 
     #>         X18         X19         X20 
-    #>  0.00000000 -0.11133637  0.00000000
+    #>   0.0000000   0.0000000   0.0000000
 
 Bugs
 ----
@@ -110,4 +110,10 @@ Contact
 For questions or feedback, please email Jiacong Du at
 <jiacong@umich.edu> or Alexander Rix <alexrix@umich.edu>.
 
-<!-- ## References -->
+References
+----------
+
+Variable selection with multiply-imputed datasets: choosing between
+stacked and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han,
+Lauren J Beesley, Stephen A Goutman, Stuart Batterman, Eva L Feldman,
+and Bhramar Mukherjee. 2020. arXiv:2003.07398
