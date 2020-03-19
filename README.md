@@ -4,7 +4,7 @@ Version](https://img.shields.io/cran/v/miselect?style=flat-square&color=blue&lab
 [![GitHub
 Release](https://img.shields.io/github/v/release/umich-cphds/miselect?include_prereleases&label=Github&style=flat-square&color=blue)](https://github.com/umich-cphds/miselect)
 [![Travis
-CI](https://img.shields.io/travis/umich-cphds/miselect?style=flat-square)](https://travis-ci.org/umich-cphds/mianet)
+CI](https://img.shields.io/travis/umich-cphds/miselect?style=flat-square)](https://travis-ci.org/umich-cphds/miselect)
 
 Variable Selection for Multiply Imputed Data
 ============================================
