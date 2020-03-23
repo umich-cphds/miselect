@@ -15,7 +15,7 @@ cv.galasso(
   lambda = NULL,
   nfolds = 5,
   foldid = NULL,
-  maxit = 1000,
+  maxit = 10000,
   eps = 1e-05
 )
 }
@@ -52,7 +52,7 @@ minimum is 3}
 \item{foldid}{an optional length \code{n} vector of values between 1 and
 \code{cv.galasso} will automatically generate folds}
 
-\item{maxit}{Maximum number of iterations to run. Default is 1000}
+\item{maxit}{Maximum number of iterations to run. Default is 10000}
 
 \item{eps}{Tolerance for convergence. Default is 1e-5}
 }

@@ -13,7 +13,7 @@ galasso(
   nlambda = 100,
   lambda.min.ratio = ifelse(all.equal(adWeight, rep(1, p)), 0.001, 1e-06),
   lambda = NULL,
-  maxit = 1000,
+  maxit = 10000,
   eps = 1e-05
 )
 }
@@ -44,7 +44,7 @@ NULL, 'lambda.min.ratio' is ignored. Default is 1e-4}
 \code{galasso} will automatically generate a lambda sequence based off
 of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
 
-\item{maxit}{Maximum number of iterations to run. Default is 1000}
+\item{maxit}{Maximum number of iterations to run. Default is 10000}
 
 \item{eps}{Tolerance for convergence. Default is 1e-5}
 }
