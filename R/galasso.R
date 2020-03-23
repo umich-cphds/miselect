@@ -33,7 +33,7 @@
 #' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
 #'     when automatically generating a 'lambda' sequence. If 'lambda' is not
 #'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-4
-#' @param maxit Maximum number of iterations to run. Default is 1000
+#' @param maxit Maximum number of iterations to run. Default is 10000
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return
 #' An object with type "galasso" and subtype
@@ -80,7 +80,7 @@
 galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                     nlambda = 100, lambda.min.ratio =
                     ifelse(all.equal(adWeight, rep(1, p)), 1e-3, 1e-6),
-                    lambda = NULL, maxit = 1000, eps = 1e-5)
+                    lambda = NULL, maxit = 10000, eps = 1e-5)
 {
     if (!is.list(x))
         stop("'x' should be a list of numeric matrices.")

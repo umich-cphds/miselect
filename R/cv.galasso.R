@@ -31,7 +31,7 @@
 #' @param foldid an optional length \code{n} vector of values between 1 and
 #     ‘nfold’ identifying what fold each observation is in. Default is NULL and
 #'     \code{cv.galasso} will automatically generate folds
-#' @param maxit Maximum number of iterations to run. Default is 1000
+#' @param maxit Maximum number of iterations to run. Default is 10000
 #' @param eps Tolerance for convergence. Default is 1e-5
 #' @return An object of type "cv.galasso" with 7 elements:
 #' \describe{
@@ -83,7 +83,7 @@
 #' @export
 cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                        nlambda = 100, lambda.min.ratio = 1e-4, lambda = NULL,
-                       nfolds = 5, foldid = NULL, maxit = 1000, eps = 1e-5)
+                       nfolds = 5, foldid = NULL, maxit = 10000, eps = 1e-5)
 {
     call <- match.call()
 
