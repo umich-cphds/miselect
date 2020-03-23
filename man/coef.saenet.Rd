@@ -17,6 +17,10 @@
 
 \item{...}{Additional unused arguments}
 }
+\value{
+A numeric vector containing the coefficients from running
+    \code{saenet} on \code{lambda} and \code{alpha}.
+}
 \description{
 \code{coef.galasso} averages the estimates across imputations to return a
 single vector instead of a matrix.

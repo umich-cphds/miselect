@@ -16,7 +16,7 @@ Description:
     to ascertain a final active set without resorting to ad hoc
     combination rules. 'miselect' presents Stacked Adaptive Elastic Net (saenet)
     and Grouped Adaptive LASSO (galasso) for continuous and binary outcomes,
-    developed by Du et al (2020), currently under review. They, by construction, 
+    developed by Du et al (2020), currently under review. They, by construction,
     force selection of the same variables across multiply imputed data.
     'miselect' also provides cross validated variants of these methods.
 License: GPL-3
@@ -28,5 +28,6 @@ Depends:
 Suggests:
     mice,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr

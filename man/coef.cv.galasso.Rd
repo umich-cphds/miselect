@@ -14,6 +14,10 @@
 
 \item{...}{Additional unused arguments}
 }
+\value{
+A numeric vector containing the coefficients from running
+    \code{galasso} on \code{lambda}.
+}
 \description{
 Extract Coefficients From a 'cv.galasso' Object
 }

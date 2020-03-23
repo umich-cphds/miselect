@@ -5,6 +5,8 @@
 #' @param alpha Chosen value of alpha. Must be between 'min(alpha)' and
 #'     'max(alpha)'. Default is 'alpha.min'
 #' @param ... Additional unused arguments
+#' @return A numeric vector containing the coefficients from running
+#'     \code{saenet} on \code{lambda} and \code{alpha}.
 #' @export
 coef.cv.saenet <- function(object, lambda = object$lambda.min,
                            alpha = object$alpha.min, ...)
@@ -17,6 +19,9 @@ coef.cv.saenet <- function(object, lambda = object$lambda.min,
     if (alpha < min(object$alpha) || alpha > max(object$alpha))
         stop("'alpha' must be between 'min(alpha)' and 'max(alpha)'.")
 
+    # Calculate lambda weights (lw) and alpha (wa) weights to attempt to
+    # interpolate the coefficients if the user doesn't pick a lambda from the
+    # lambda sequence.
     l <- abs(log(lambda) - log(object$lambda))
     l <- (l / (max(l) - min(l))) ^ -2
 
@@ -43,6 +48,8 @@ coef.cv.saenet <- function(object, lambda = object$lambda.min,
 #' @param alpha Chosen value of alpha. Must be between 'min(alpha)' and
 #'     'max(alpha)'. Default is 'alpha.min'
 #' @param ... Additional unused arguments
+#' @return A numeric vector containing the coefficients from running
+#'     \code{saenet} on \code{lambda} and \code{alpha}.
 #' @export
 coef.saenet <- function(object, lambda, alpha, ...)
 {
@@ -54,6 +61,9 @@ coef.saenet <- function(object, lambda, alpha, ...)
     if (alpha < min(object$alpha) || alpha > max(object$alpha))
         stop("'alpha' must be between 'min(alpha)' and 'max(alpha)'.")
 
+    # Calculate lambda weights (lw) and alpha (wa) weights to attempt to
+    # interpolate the coefficients if the user doesn't pick a lambda from the
+    # lambda sequence.
     l <- abs(log(lambda) - log(object$lambda))
     l <- (l / (max(l) - min(l))) ^ -2
 
@@ -75,6 +85,8 @@ coef.saenet <- function(object, lambda, alpha, ...)
 #' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
 #'     'max(lambda)'. Default is 'lambda.min'
 #' @param ... Additional unused arguments
+#' @return A numeric vector containing the coefficients from running
+#'     \code{galasso} on \code{lambda}.
 #' @export
 coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
 {
@@ -84,6 +96,8 @@ coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
     if (lambda < min(object$lambda) || lambda > max(object$lambda))
         stop("'lambda' must be between 'min(lambda)' and 'max(lambda)'.")
 
+    # Calculate lambda weights to attempt to interpolate the coefficients if the
+    # user doesn't pick a lambda from the lambda sequence.
     l <- abs(log(lambda) - log(object$lambda))
     l <- (l / (max(l) - min(l))) ^ -2
 
@@ -98,6 +112,8 @@ coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
 #' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
 #'     'max(lambda)'. Default is 'lambda.min'
 #' @param ... Additional unused arguments
+#' @return A numeric vector containing the coefficients from running
+#'     \code{galasso} on \code{lambda}.
 #' @export
 coef.galasso <- function(object, lambda, ...)
 {

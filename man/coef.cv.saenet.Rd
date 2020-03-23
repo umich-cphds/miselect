@@ -17,6 +17,10 @@
 
 \item{...}{Additional unused arguments}
 }
+\value{
+A numeric vector containing the coefficients from running
+    \code{saenet} on \code{lambda} and \code{alpha}.
+}
 \description{
 Extract Coefficients From a 'cv.saenet' Object
 }

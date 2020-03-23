@@ -69,8 +69,7 @@
 #' pf       <- rep(1, 20)
 #' adWeight <- rep(1, 20)
 #'
-#' # Since 'Y' is a binary variable, we use 'family = "binomial"'
-#' fit <- galasso(x, y, pf, adWeight, family = "binomial")
+#' fit <- galasso(x, y, pf, adWeight)
 #' }
 #' @references
 #' Variable selection with multiply-imputed datasets: choosing between stacked

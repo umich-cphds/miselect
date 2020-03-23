@@ -101,8 +101,7 @@ for (i in 1:5) {
 pf       <- rep(1, 20)
 adWeight <- rep(1, 20)
 
-# Since 'Y' is a binary variable, we use 'family = "binomial"'
-fit <- galasso(x, y, pf, adWeight, family = "binomial")
+fit <- galasso(x, y, pf, adWeight)
 }
 }
 \references{

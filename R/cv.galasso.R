@@ -69,11 +69,10 @@
 #'
 #' pf       <- rep(1, 20)
 #' adWeight <- rep(1, 20)
-
-#' # Since 'Y' is a binary variable, we use 'family = "binomial"'
-#' fit <- cv.galasso(x,y, pf, adWeight, family = "binomial")
 #'
-#' # By default 'coef' returns the betas for (lambda.min , alpha.min)
+#' fit <- cv.galasso(x, y, pf, adWeight)
+#'
+#' # By default 'coef' returns the betas for lambda.min.
 #' coef(fit)
 #' }
 #' @references
