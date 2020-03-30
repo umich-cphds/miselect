@@ -17,7 +17,7 @@ adWeight <- rep(1, 20)
 
 
 expect_silent({
-    fit <- galasso(x, y, pf, adWeight)})
+    fit <- galasso(x, y, pf, adWeight, nlambda = 50)})
 })
 
 
@@ -38,5 +38,5 @@ adWeight <- rep(1, 20)
 
 
 expect_silent({
-    fit <- cv.galasso(x, y, pf, adWeight)})
+    fit <- cv.galasso(x, y, pf, adWeight, nlambda = 50)})
 })

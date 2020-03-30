@@ -1,9 +1,9 @@
-This is a re-submission.
+This is a re-re-submission.
 
 ## Test environments
-* Ubuntu 16.04 (travis): r-devel (2020-03-13 r77948), r-release (3.6.2), r-oldrelease (3.5.3)
+* Ubuntu 16.04 (travis): r-devel (2020-03-26 r78078), r-release (3.6.3), r-oldrelease (3.5.3)
 
-* winbuilder: r-devel (2020-03-11 r77925), r-release (3.6.3)
+* winbuilder: r-devel (2020-03-26 r78078), r-release (3.6.3)
 
 ## R CMD check results
 > There were no ERRORs or WARNINGs.
@@ -15,6 +15,12 @@ This is a re-submission.
 > New submission
 
 ## CRAN Reviewer Comments
+
+> Overall checktime 12 min > 10 min
+
+Checktime _should_  be < 10min now.
+
+## Previous CRAN Reviewer Comments
 
 > Thanks, your examples are wrapped in \donttest{}, hence nothing gets
 > tested. Please unwrap the examples if that is feasible and if they can

@@ -18,7 +18,7 @@ adWeight <- rep(1, 20)
 
 
 expect_silent({
-    fit <- saenet(x, y, pf, adWeight, weights, family = "binomial")})
+    fit <- saenet(x, y, pf, adWeight, weights, family = "binomial", nlambda = 50)})
 })
 
 
@@ -39,5 +39,5 @@ adWeight <- rep(1, 20)
 
 
 expect_silent({
-    fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial")})
+    fit <- cv.saenet(x, y, pf, adWeight, weights, family = "binomial", nlambda = 50)})
 })
