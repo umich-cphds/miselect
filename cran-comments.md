@@ -1,7 +1,7 @@
 This is a re-re-submission.
 
 ## Test environments
-* Ubuntu 16.04 (travis): r-devel (2020-03-26 r78078), r-release (3.6.3), r-oldrelease (3.5.3)
+* Ubuntu 16.04 (travis): r-devel (2020-03-13 r77948), r-release (3.6.2), r-oldrelease (3.5.3)
 
 * winbuilder: r-devel (2020-03-26 r78078), r-release (3.6.3)
 
