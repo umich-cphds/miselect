@@ -11,7 +11,7 @@ cv.galasso(
   adWeight,
   family = c("gaussian", "binomial"),
   nlambda = 100,
-  lambda.min.ratio = 1e-04,
+  lambda.min.ratio = ifelse(isTRUE(all.equal(adWeight, rep(1, p))), 0.001, 1e-06),
   lambda = NULL,
   nfolds = 5,
   foldid = NULL,

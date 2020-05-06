@@ -82,10 +82,22 @@
 #' arXiv:2003.07398
 #' @export
 cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
-                       nlambda = 100, lambda.min.ratio = 1e-4, lambda = NULL,
-                       nfolds = 5, foldid = NULL, maxit = 10000, eps = 1e-5)
+                       nlambda = 100, lambda.min.ratio =
+                       ifelse(isTRUE(all.equal(adWeight, rep(1, p))), 1e-3, 1e-6),
+                       lambda = NULL, nfolds = 5, foldid = NULL, maxit = 10000,
+                       eps = 1e-5)
 {
     call <- match.call()
+
+    if (!is.list(x))
+        stop("'x' should be a list of numeric matrices.")
+    if (any(sapply(x, function(.x) !is.matrix(.x) || !is.numeric(.x))))
+        stop("Every 'x' should be a numeric matrix.")
+
+    dim <- dim(x[[1]])
+    n <- dim[1]
+    p <- dim[2]
+    m <- length(x)
 
     if (!is.numeric(nfolds) || length(nfolds) > 1)
         stop("'nfolds' should a be single number.")
@@ -97,7 +109,6 @@ cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
     fit <- galasso(x, y, pf, adWeight, family, nlambda, lambda.min.ratio,
                    lambda, maxit, eps)
 
-    n <- length(y[[1]])
     if (!is.null(foldid)) {
         if (!is.numeric(foldid) || !is.vector(foldid) || length(foldid) != n)
             stop("'foldid' must be length n numeric vector.")
@@ -111,8 +122,6 @@ cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
     if (nfolds < 3)
         stop("'nfolds' must be bigger than 3.")
 
-    m <- length(x)
-    p <- ncol(x[[1]])
     x.scaled <- lapply(x, scale)
 
     cvm  <- matrix(0, nlambda, nfolds)

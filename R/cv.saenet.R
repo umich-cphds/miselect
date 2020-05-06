@@ -106,12 +106,23 @@
 #'
 #' }
 #' @export
-cv.saenet <- function(x, y, pf, adWeight, weights, family =
-                      c("gaussian", "binomial"), alpha = 1, nlambda = 100,
-                      lambda.min.ratio = 1e-3, lambda = NULL, nfolds = 5,
-                      foldid = NULL, maxit = 1000, eps = 1e-5)
+cv.saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial"),
+                      alpha = 1, nlambda = 100, lambda.min.ratio =
+                      ifelse(isTRUE(all.equal(adWeight, rep(1, p))), 1e-3, 1e-6),
+                      lambda = NULL, nfolds = 5, foldid = NULL, maxit = 1000,
+                      eps = 1e-5)
 {
     call <- match.call()
+
+    if (!is.list(x))
+        stop("'x' should be a list of numeric matrices.")
+    if (any(sapply(x, function(.x) !is.matrix(.x) || !is.numeric(.x))))
+        stop("Every 'x' should be a numeric matrix.")
+
+    dim <- dim(x[[1]])
+    n <- dim[1]
+    p <- dim[2]
+    m <- length(x)
 
     if (!is.numeric(nfolds) || length(nfolds) > 1)
         stop("'nfolds' should a be single number.")
@@ -122,10 +133,6 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family =
 
     fit <- saenet(x, y, pf, adWeight, weights, family, alpha, nlambda,
                   lambda.min.ratio, lambda, maxit, eps)
-
-    n <- length(y[[1]])
-    p <- ncol(x[[1]])
-    m <- length(x)
 
     X <- do.call("rbind", x)
     Y <- do.call("c", y)

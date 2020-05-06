@@ -11,7 +11,7 @@ galasso(
   adWeight,
   family = c("gaussian", "binomial"),
   nlambda = 100,
-  lambda.min.ratio = ifelse(all.equal(adWeight, rep(1, p)), 0.001, 1e-06),
+  lambda.min.ratio = ifelse(isTRUE(all.equal(adWeight, rep(1, p))), 0.001, 1e-06),
   lambda = NULL,
   maxit = 10000,
   eps = 1e-05

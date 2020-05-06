@@ -1,6 +1,6 @@
 Package: miselect
 Title: Variable Selection for Multiply Imputed Data
-Version: 0.9.0
+Version: 0.9.1
 Authors@R: c(
     person("Alexander", "Rix", email = "alexrix@umich.edu", role = c("aut", "cre")),
     person("Jiacong", "Du", email = "jiacong@umich.edu", role = "aut")

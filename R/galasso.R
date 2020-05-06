@@ -79,7 +79,7 @@
 #' @export
 galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                     nlambda = 100, lambda.min.ratio =
-                    ifelse(all.equal(adWeight, rep(1, p)), 1e-3, 1e-6),
+                    ifelse(isTRUE(all.equal(adWeight, rep(1, p))), 1e-3, 1e-6),
                     lambda = NULL, maxit = 10000, eps = 1e-5)
 {
     if (!is.list(x))
@@ -140,8 +140,8 @@ galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                 Y_X[i,] <- t(ifelse(y[[i]] == 1, 1 - mu, - mu)) %*% x[[i]]
             }
         }
-        norm <- sqrt(apply(Y_X ^ 2, 2, sum))
-        lambda.max <- max(stats::na.omit(norm / (n * adWeight * pf)))
+        l <- sqrt(apply(Y_X ^ 2, 2, sum)) / (n * adWeight * pf)
+        lambda.max <- max(l[is.finite(l)])
 
         lambda <- exp(seq(log(lambda.max),
                           log(lambda.max * lambda.min.ratio),

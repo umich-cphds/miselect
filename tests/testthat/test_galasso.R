@@ -2,6 +2,7 @@ context("Test galasso")
 
 
 test_that("galasso works", {
+library(mice)
 mids <- mice(miselect.df, m = 5, printFlag = FALSE)
 dfs <- lapply(1:5, function(i) complete(mids, action = i))
 
@@ -22,7 +23,7 @@ expect_silent({
 
 
 test_that("cv.galasso works", {
-
+library(mice)
 mids <- mice(miselect.df, m = 5, printFlag = FALSE)
 dfs <- lapply(1:5, function(i) complete(mids, action = i))
 
@@ -33,8 +34,8 @@ for (i in 1:5) {
     y[[i]] <- dfs[[i]]$Y
 }
 
-pf       <- rep(1, 20)
-adWeight <- rep(1, 20)
+pf       <- c(0, rep(1, 19))
+adWeight <- c(0, rep(1, 19))
 
 
 expect_silent({

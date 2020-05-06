@@ -86,8 +86,8 @@
 #' @export
 saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial"),
                    alpha = 1, nlambda = 100, lambda.min.ratio =
-                   ifelse(all.equal(adWeight, rep(1, p)), 1e-3, 1e-6), lambda =
-                   NULL, maxit = 1000, eps = 1e-5)
+                   ifelse(isTRUE(all.equal(adWeight, rep(1, p))), 1e-3, 1e-6), 
+                   lambda = NULL, maxit = 1000, eps = 1e-5)
 {
     if (!is.list(x))
         stop("'x' should be a list of numeric matrices.")
@@ -136,6 +136,7 @@ saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial
     if (!is.numeric(lambda.min.ratio) || length(lambda.min.ratio) > 1  ||
         lambda.min.ratio < 0)
     {
+        print(lambda.min.ratio)
         stop("'lambda.min.ratio' should be a number >= 0.")
     }
 
@@ -159,8 +160,8 @@ saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial
             mu <- mean(Y)
             wY_X <- t(ifelse(Y == 1, 1 - mu, - mu) * weights) %*% X
         }
-        wY_X <- stats::na.omit(wY_X / (n * adWeight * max(min(alpha), 0.01) * pf))
-        lambda.max <- max(abs(wY_X) )
+        l <- abs(wY_X / (n * adWeight * max(min(alpha), 0.01) * pf))
+        lambda.max <- max(l[is.finite(l)])
 
         lambda <- exp(seq(log(lambda.max),
                           log(lambda.max * lambda.min.ratio),
