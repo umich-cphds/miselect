@@ -86,7 +86,7 @@
 #' @export
 saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial"),
                    alpha = 1, nlambda = 100, lambda.min.ratio =
-                   ifelse(isTRUE(all.equal(adWeight, rep(1, p))), 1e-3, 1e-6), 
+                   ifelse(isTRUE(all.equal(adWeight, rep(1, p))), 1e-3, 1e-6),
                    lambda = NULL, maxit = 1000, eps = 1e-5)
 {
     if (!is.list(x))
@@ -198,6 +198,9 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
     pi  <- numeric(n * m)
     res <- numeric(n * m)
 
+    WX2 <- apply(X, 2, function(x) x * x * weights)
+    WX  <- apply(X, 2, function(x) x * weights)
+
     fit.model <- function(L1, L2)
     {
         beta  <- rep(0, p)
@@ -205,6 +208,7 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
         beta.old  <- beta - 1
         beta0.old <- beta0 - 1
         comp.set <- seq(p)
+
 
         it <- 0
         while (max(abs(beta - beta.old)) > eps && it < maxit) {
@@ -214,12 +218,10 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
             beta0.old <- beta0
 
             eta <- X %*% beta + beta0
-            pi <- exp(eta) / (1 + exp(eta))
-            pi[abs(1 - pi) <= 1e-5] <- 1
-            pi[abs(pi) <= 1e-5] <- 0
-            hessian <- pi * (1 - pi)
-            hessian[hessian <= 1e-5] <- 1e-5
-            res <- (Y - pi) / hessian
+            eta  <- exp(eta) / (1 + exp(eta))
+            hessian <- eta * (1 - eta)
+            res     <- (Y - eta) / hessian
+
             # update beta0
             z2 <- sum(weights * hessian)
             z1 <- sum(weights * hessian * res)
@@ -228,11 +230,12 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
 
             # update beta
             for (j in comp.set) {
-                z2 <- sum(weights * hessian * X[, j] * X[, j])
-                z1 <- sum(weights * hessian * X[, j] * res)
+                z2 <- sum(hessian * WX2[, j])
+                z1 <- sum(hessian * WX[, j] * res)
                 z <- z1 + beta[j] * z2
 
-                beta[j] <- threshold.saenet(z / n, z2 / n, L1[j], L2[j])
+                beta[j] <- S(z / n, L1[j]) / (z2 / n + 2 * L2[j])
+
                 res <- res - X[, j] * (beta[j] - beta.old[j])
             }
             comp.set <- which(beta != 0)
@@ -273,6 +276,10 @@ fit.saenet.gaussian <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
                                 pf, adWeight, maxit, eps)
 {
     res <- numeric(n * m)
+
+    z2 <- apply(X, 2, function(x) mean(weights * x * x))
+    WX <- apply(X, 2, function(x) weights * x)
+
     fit.model <- function(L1, L2)
     {
         beta  <- rep(0, p)
@@ -284,25 +291,23 @@ fit.saenet.gaussian <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
         it <- 0
         while (max(abs(beta - beta.old)) > eps && it < maxit) {
             it <- it + 1
-
             beta.old  <- beta
             beta0.old <- beta0
 
             res <- Y - X %*% beta - beta0
 
-            # update b
+            # soft threshold active betas
             for (j in comp.set) {
-                z2 <- sum(weights * X[, j] * X[, j])
-                z1 <- sum(weights * X[, j] * res)
-                z  <- z1 + beta.old[j] * z2
+                z1 <- mean(WX[, j] * res)
+                z  <- z1 + beta[j] * z2[j]
 
-                # soft threshold beta[j]
-                beta[j] <- threshold.saenet(z / n, z2 / n, L1[j], L2[j])
+                beta[j] <- S(z, L1[j]) / (z2[j] + 2 * L2[j])
 
                 # update residuals
                 res <- res - X[, j] * (beta[j] - beta.old[j])
             }
             comp.set <- which(beta != 0)
+            #print(beta)
         }
 
         # transform back into scale

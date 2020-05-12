@@ -39,5 +39,5 @@ adWeight <- c(0, rep(1, 19))
 
 
 expect_silent({
-    fit <- cv.galasso(x, y, pf, adWeight, nlambda = 50)})
+    fit <- cv.galasso(x, y, pf, adWeight, nlambda = 50, family = "binomial")})
 })

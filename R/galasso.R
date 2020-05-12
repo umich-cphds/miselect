@@ -212,8 +212,9 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, pf, maxit, eps)
                 for (i in seq(m))
                     z[i] <- t(x[[i]][, j]) %*% res[, i] + n * beta[j, i]
 
-                #soft threshold beta
-                beta[j,] <- t(threshold.galasso.binomial(z / (4 * n), L[j]))
+                #soft threshold beta_j
+                normz    <- sqrt(sum(z ^ 2))
+                beta[j,] <- t(S(4 * normz / n, L[j]) * 4 * z / normz)
 
                 # update residuals with thresholded beta
                 for (i in seq(m))
@@ -297,9 +298,10 @@ fit.galasso.gaussian <- function(x, y, lambda, adWeight, pf, maxit, eps)
                 for (i in seq(m))
                     z[i] <- t(x[[i]][, j]) %*% res[, i] + n * beta[j, i]
 
-                # soft threshold beta
-                beta[j, ] <- t(threshold.galasso.gaussian(z / n, L[j]))
-                # update residuals with thresholded beta
+                # soft threshold beta_j
+                normz    <- sqrt(sum(z ^ 2))
+                beta[j,] <- t(S(normz / n, L[j]) * z / normz)
+
                 for (i in seq(m))
                     res[, i] <- res[,i] - x[[i]][, j] * (beta[j, i] - beta.old[j, i])
             }

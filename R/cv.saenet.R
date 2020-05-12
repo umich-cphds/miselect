@@ -182,25 +182,23 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binom
     }
 
     cvse <- apply(cvm, c(1, 2), stats::sd) / sqrt(nfolds)
-    cvm <- apply(cvm, c(1, 2), mean)
-    i <- which.min(cvm)
+    cvm  <- apply(cvm, c(1, 2), mean)
 
-    row <- (i - 1) %% nlambda + 1
+    i.min    <- which.min(apply(cvm, 1, min))
+    j.min    <- which.min(apply(cvm, 2, min))
 
-    col <- (i - 1) %/% nlambda + 1
+    lambda.min <- fit$lambda[i.min]
+    alpha.min <- fit$alpha[j.min]
 
-    lambda.min <- fit$lambda[row]
-    alpha.min  <- alpha[col]
+    k <- abs(cvm - cvm[i.min, j.min]) < cvse[i.min, j.min]
 
-    j <- abs(cvm - min(cvm)) < cvse[i]
-    # Inf could cause NaN if df = 0
-    i <- which.min(fit$df * ifelse(j, 1, 1e9))
+    k <- (fit$df + 1) * ifelse(k, 1, Inf)
 
-    row <- (i - 1) %% nlambda + 1
-    col <- (i - 1) %/% nlambda + 1
+    i.1se    <- which.min(apply(k, 1, min))
+    j.1se    <- which.min(apply(k, 2, min))
 
-    lambda.1se <- fit$lambda[row]
-    alpha.1se  <- alpha[col]
+    lambda.1se <- fit$lambda[i.1se]
+    alpha.1se  <- alpha[j.1se]
 
     structure(list(call = call, lambda = fit$lambda, alpha = alpha, cvm = cvm,
                    cvse = cvse, saenet.fit = fit, lambda.min = lambda.min,
