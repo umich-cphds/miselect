@@ -85,8 +85,8 @@ coef.saenet <- function(object, lambda, alpha, ...)
 #' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
 #'     'max(lambda)'. Default is 'lambda.min'
 #' @param ... Additional unused arguments
-#' @return A numeric vector containing the coefficients from running
-#'     \code{galasso} on \code{lambda}.
+#' @return A list of numeric vectors containing the coefficients from running
+#'     \code{galasso} on \code{lambda} for each imputation.
 #' @export
 coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
 {
@@ -104,7 +104,8 @@ coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
     w <- l / sum(l)
     w <- ifelse(is.nan(w), 1, w)
 
-    apply(object$galasso.fit$beta, 2, function(x) sum(w * x))
+    lapply(object$galasso.fit$beta, function(dat) {
+        apply(dat, 2, function(x) sum(w * x))})
 }
 
 #' Extract Coefficients From a 'galasso' Object
@@ -112,8 +113,8 @@ coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
 #' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
 #'     'max(lambda)'. Default is 'lambda.min'
 #' @param ... Additional unused arguments
-#' @return A numeric vector containing the coefficients from running
-#'     \code{galasso} on \code{lambda}.
+#' @return A list of numeric vectors containing the coefficients from running
+#'     \code{galasso} on \code{lambda} for each imputation.
 #' @export
 coef.galasso <- function(object, lambda, ...)
 {
@@ -129,5 +130,5 @@ coef.galasso <- function(object, lambda, ...)
     w <- l / sum(l)
     w <- ifelse(is.nan(w), 1, w)
 
-    apply(object$beta, 2, function(x) sum(w * x))
+    lapply(object$beta, function(dat) {apply(dat, 2, function(x) sum(w * x))})
 }
