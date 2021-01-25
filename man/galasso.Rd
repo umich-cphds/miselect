@@ -54,9 +54,8 @@ An object with type "galasso" and subtype
 Both subtypes have 4 elements:
 \describe{
 \item{lambda}{Sequence of lambda fit.}
-\item{beta}{p + 1 x nlambda matrix representing the estimated betas at
-            each value of lambda. The betas are constructed as the average
-            of the betas from each imputation.}
+\item{beta}{list of length # of imputations of (nlambda x (p + 1)) matrices representing the estimated betas at
+            each value of lambda.}
 \item{df}{Number of nonzero betas at each value of lambda.}
 \item{mse}{For objects with subtype "galasso.gaussian", the training MSE for
            each value of lambda.}
