@@ -104,7 +104,8 @@ coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
     w <- l / sum(l)
     w <- ifelse(is.nan(w), 1, w)
 
-    apply(object$galasso.fit$beta, 2, function(x) sum(w * x))
+    lapply(object$galasso.fit$beta, function(dat) {
+        apply(dat, 2, function(x) sum(w * x))})
 }
 
 #' Extract Coefficients From a 'galasso' Object
@@ -129,5 +130,5 @@ coef.galasso <- function(object, lambda, ...)
     w <- l / sum(l)
     w <- ifelse(is.nan(w), 1, w)
 
-    apply(object$beta, 2, function(x) sum(w * x))
+    lapply(object$beta, function(dat) {apply(dat, 2, function(x) sum(w * x))})
 }

@@ -158,13 +158,14 @@ galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
         gaussian = fit.galasso.gaussian(x, y, lambda, adWeight, pf, maxit, eps),
         binomial = fit.galasso.binomial(x, y, lambda, adWeight, pf, maxit, eps))
 
-    fit$beta <- apply(fit$beta, c(3, 1), mean)
+    #fit$beta <- apply(fit$beta, c(3, 1), mean)
 
     cn <- colnames(x[[1]])
     if (is.null(cn))
         cn <- paste0("x", seq(p))
-    colnames(fit$beta) <- c("(Intercept)", cn)
-
+    #colnames(fit$beta) <- c("(Intercept)", cn)
+    dimnames(fit$beta)[[1]] <- c("(Intercept)", cn)
+    fit$beta <- lapply(1:dim(fit$beta)[2], function(x) { t(fit$beta[,x,]) })
     return(fit)
 }
 
