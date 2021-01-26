@@ -215,7 +215,7 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, pf, maxit, eps)
 
                 #soft threshold beta_j
                 normz    <- sqrt(sum(z ^ 2))
-                beta[j,] <- t(S(4 * normz / n, L[j]) * 4 * z / normz)
+                beta[j,] <- t(S(normz / (4 * n), L[j]) * 4 * z / normz)
 
                 # update residuals with thresholded beta
                 for (i in seq(m))
