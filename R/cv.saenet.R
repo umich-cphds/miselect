@@ -183,26 +183,41 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binom
 
     cvse <- apply(cvm, c(1, 2), stats::sd) / sqrt(nfolds)
     cvm  <- apply(cvm, c(1, 2), mean)
-
-    i.min    <- which.min(apply(cvm, 1, min))
-    j.min    <- which.min(apply(cvm, 2, min))
-
-    lambda.min <- fit$lambda[i.min]
-    alpha.min <- fit$alpha[j.min]
-
-    k <- abs(cvm - cvm[i.min, j.min]) < cvse[i.min, j.min]
-
-    k <- (fit$df + 1) * ifelse(k, 1, Inf)
-
-    i.1se    <- which.min(apply(k, 1, min))
-    j.1se    <- which.min(apply(k, 2, min))
-
-    lambda.1se <- fit$lambda[i.1se]
-    alpha.1se  <- alpha[j.1se]
+    
+    min.id = which(cvm == min(cvm), arr.ind = TRUE)
+    se = cvse[min.id[1], min.id[2]]
+    range = min(cvm) + se
+    
+    all.id = which(cvm < range, arr.ind = TRUE)
+    lambda.seq = lambda[all.id[, 1]]
+    alpha.seq = alpha[all.id[, 2]]
+    L1 = lambda.seq * alpha.seq
+    L1.max.id = which(L1 == max(L1))
+    lambda.1se.id = all.id[L1.max.id, 1]
+    alpha.1se.id = all.id[L1.max.id, 2]
+    lambda.1se = lambda[lambda.1se.id]
+    alpha.1se = alpha[alpha.1se.id]
+    # i.min    <- which.min(apply(cvm, 1, min))
+    # j.min    <- which.min(apply(cvm, 2, min))
+    # 
+    # lambda.min <- fit$lambda[i.min]
+    # alpha.min <- fit$alpha[j.min]
+    # 
+    # k <- abs(cvm - cvm[i.min, j.min]) < cvse[i.min, j.min]
+    # 
+    # k <- (fit$df + 1) * ifelse(k, 1, Inf)
+    # 
+    # i.1se    <- which.min(apply(k, 1, min))
+    # j.1se    <- which.min(apply(k, 2, min))
+    # 
+    # lambda.1se <- fit$lambda[i.1se]
+    # alpha.1se  <- alpha[j.1se]
 
     structure(list(call = call, lambda = fit$lambda, alpha = alpha, cvm = cvm,
-                   cvse = cvse, saenet.fit = fit, lambda.min = lambda.min,
-                   alpha.min = alpha.min, lambda.1se = lambda.1se, alpha.1se =
+                   cvse = cvse, saenet.fit = fit, 
+                   #lambda.min = lambda.min,
+                   #alpha.min = alpha.min, 
+                   lambda.1se = lambda.1se, alpha.1se =
                    alpha.1se, df = fit$df), class = "cv.saenet")
 }
 
@@ -250,8 +265,8 @@ print.cv.saenet <- function(x, ...)
     print(x$call)
     cat("Average cross validation error for each (lambda, alpha)\n")
     print(cvm)
-    cat("(lambda, alpha) min:\n")
-    cat("(", x$lambda.min, ", ", x$alpha.min, ")\n", sep = "")
+    # cat("(lambda, alpha) min:\n")
+    # cat("(", x$lambda.min, ", ", x$alpha.min, ")\n", sep = "")
     cat("(lambda, alpha) 1 SE:\n")
     cat("(", x$lambda.1se, ", ", x$alpha.1se, ")\n", sep = "")
     invisible(x)
