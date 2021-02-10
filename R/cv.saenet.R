@@ -144,10 +144,13 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binom
             stop("'foldid' must be length n numeric vector.")
         nfolds <- max(foldid)
     } else {
-
         r     <- n %% nfolds
         q     <- (n - r) / nfolds
-        foldid <- c(rep(seq(nfolds), q), seq(r))
+        if(r == 0) {
+            foldid = rep(seq(nfolds), q)
+        } else {
+            foldid = c(rep(seq(nfolds), q), seq(r))
+        }
         foldid <- sample(foldid, n)
         foldid <- rep(foldid, m)
     }

@@ -116,8 +116,13 @@ cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
     } else {
         r     <- n %% nfolds
         q     <- (n - r) / nfolds
-        folds <- c(rep(seq(nfolds), q), seq(r))
-        folds <- sample(folds, n)
+        if(r == 0) {
+            folds <- c(rep(seq(nfolds), q))
+            folds <- sample(folds, n)
+        } else {
+            folds <- c(rep(seq(nfolds), q), seq(r))
+            folds <- sample(folds, n)
+        }
     }
     if (nfolds < 3)
         stop("'nfolds' must be bigger than 3.")
@@ -152,9 +157,9 @@ cv.galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
 
     i <- which.min(cvm)
     lambda.min <- fit$lambda[i]
-    j <- which((abs(cvm - cvm[i]) < cvse[i]))
-    i <- which.min(fit$df[j])
-    lambda.1se <- fit$lambda[j][i]
+    range = cvm[i] + cvse[i]
+    id.all = which(cvm <= range)
+    lambda.1se <- max(fit$lambda[id.all])
 
     structure(list(call = call, lambda = fit$lambda, cvm = cvm, cvse = cvse,
                    galasso.fit = fit, lambda.min = lambda.min, lambda.1se =

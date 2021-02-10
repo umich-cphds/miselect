@@ -251,12 +251,12 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, pf, maxit, eps)
     beta <- array(0, c(p + 1, m, nlambda))
     dev  <- rep(0, nlambda)
     df   <- rep(0, nlambda)
-    start  <- matrix(1, p + 1, m)
+    start  <- matrix(0, p + 1, m)
     for (i in seq(nlambda)) {
         L <- lambda[i] * adWeight * pf
         fit <- fit.model(start, L)
 
-        # start       <- fit$beta
+        start       <- fit$beta
         dev[i]      <- mean(fit$dev)
         beta[,, i]  <- fit$coef
         df[i]       <- sum(beta[-1, 1, i] != 0)

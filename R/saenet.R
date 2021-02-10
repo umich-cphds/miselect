@@ -201,10 +201,10 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
     WX2 <- apply(X, 2, function(x) x * x * weights)
     WX  <- apply(X, 2, function(x) x * weights)
 
-    fit.model <- function(L1, L2)
+    fit.model <- function(L1, L2, start)
     {
-        beta  <- rep(0, p)
-        beta0 <- 0
+        beta0 = start[1]
+        beta = start[-1]
         beta.old  <- beta - 1
         beta0.old <- beta0 - 1
         comp.set <- seq(p)
@@ -250,17 +250,19 @@ fit.saenet.binomial <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
 
         eta <- X %*% beta + beta0
         dev <- -2 * m * mean(weights * (Y * eta - log(1 + exp(eta))))
-        list(coef = coef, dev = dev)
+        list(coef = coef, dev = dev, beta = c(beta0, beta))
     }
 
     df   <- matrix(0, nlambda, length(alpha))
     dev  <- matrix(0, nlambda, length(alpha))
     beta <- array(0, c(nlambda, length(alpha), p + 1))
+    start = rep(0, p + 1)
     for (j in seq(length(alpha))) {
         for (i in seq(nlambda)) {
             L1 <- lambda[i] * alpha[j] * adWeight * pf
             L2 <- lambda[i] * (1 - alpha[j]) * pf
-            fit <- fit.model(L1, L2)
+            fit <- fit.model(L1, L2, start = start)
+            start = fit$beta
             beta[i, j, ] <- fit$coef
             dev[i, j]    <- fit$dev
             df[i, j]     <- sum(beta[i, j,] != 0) - 1
