@@ -214,8 +214,16 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, pf, maxit, eps)
                     z[i] <- t(x[[i]][, j]) %*% res[, i] + n * beta[j, i]
 
                 #soft threshold beta_j
-                normz    <- sqrt(sum(z ^ 2))
-                beta[j,] <- t(S(normz / (4 * n), L[j]) * 4 * z / normz)
+                normz <- sqrt(sum((z/(4*n))^2))
+                
+                if(is.na(normz)) {
+                    beta = start[-1,]
+                    beta0 = start[1,]
+                    warning("galasso does not converge for small penalties")
+                    break
+                } else {
+                    beta[j,] <- t(S(normz, L[j]) * z / (n*normz))
+                }
 
                 # update residuals with thresholded beta
                 for (i in seq(m))
@@ -223,6 +231,7 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, pf, maxit, eps)
                 }
 
             comp.set <- which(beta[, 1] != 0)
+            if(is.na(normz)) {break} # to escape the while loop
         }
         if (max(abs(beta - beta.old)) >= eps)
             warning("galasso did not converge: delta = ", max(abs(beta - beta.old)))
@@ -253,10 +262,20 @@ fit.galasso.binomial <- function(x, y, lambda, adWeight, pf, maxit, eps)
     df   <- rep(0, nlambda)
     start  <- matrix(0, p + 1, m)
     for (i in seq(nlambda)) {
+        
+        # avoid optimization for small penalties once divergence happens
+        if(i > 1 && all(fit$beta == start)) {
+            start       <- fit$beta
+            dev[i]      <- mean(fit$dev)
+            beta[,, i]  <- fit$coef
+            df[i]       <- sum(beta[-1, 1, i] != 0)
+            next
+        }
+        
+        if(i > 1) {start <- fit$beta}
         L <- lambda[i] * adWeight * pf
         fit <- fit.model(start, L)
-
-        start       <- fit$beta
+        
         dev[i]      <- mean(fit$dev)
         beta[,, i]  <- fit$coef
         df[i]       <- sum(beta[-1, 1, i] != 0)
@@ -301,12 +320,20 @@ fit.galasso.gaussian <- function(x, y, lambda, adWeight, pf, maxit, eps)
 
                 # soft threshold beta_j
                 normz    <- sqrt(sum(z ^ 2))
-                beta[j,] <- t(S(normz / n, L[j]) * z / normz)
+                if(is.na(normz)) {
+                    beta = start[-1,]
+                    beta0 = start[1,]
+                    warnings("galasso goes not converge for small penalties")
+                    break
+                } else {
+                    beta[j,] <- t(S(normz / n, L[j]) * z / normz)
+                }
 
                 for (i in seq(m))
                     res[, i] <- res[,i] - x[[i]][, j] * (beta[j, i] - beta.old[j, i])
             }
             comp.set <- which(beta[, 1] != 0)
+            if(is.na(normz)) {break}
         }
         if (max(abs(beta - beta.old)) >= eps)
             warning("galasso did not converge: delta = ", max(abs(beta - beta.old)))
@@ -330,12 +357,21 @@ fit.galasso.gaussian <- function(x, y, lambda, adWeight, pf, maxit, eps)
     beta <- array(0, c(p + 1, m, nlambda))
     mse  <- rep(0, nlambda)
     df   <- rep(0, nlambda)
-    start  <- rbind(sapply(y, mean), matrix(1, p, m))
+    start  <- matrix(0, p + 1, m)
     for (i in seq(nlambda)) {
+        
+        if(i > 1 && fit$beta == start) {
+            start <- fit$beta
+            mse[i]   <- mean(fit$mse)
+            beta[,,i] <- fit$coef
+            df[i]    <- sum(beta[-1, 1, i] != 0)
+            next
+        }
+        
+        if(i > 1) {start <- fit$beta}
         L <- lambda[i] * adWeight * pf
         fit <- fit.model(start, L)
 
-        # start <- fit$beta
         mse[i]   <- mean(fit$mse)
         beta[,,i] <- fit$coef
         df[i]    <- sum(beta[-1, 1, i] != 0)

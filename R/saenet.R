@@ -282,10 +282,10 @@ fit.saenet.gaussian <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
     z2 <- apply(X, 2, function(x) mean(weights * x * x))
     WX <- apply(X, 2, function(x) weights * x)
 
-    fit.model <- function(L1, L2)
+    fit.model <- function(L1, L2, start)
     {
-        beta  <- rep(0, p)
-        beta0 <- mean(Y)
+        beta  <- start[-1]
+        beta0 <- start[1]
         beta.old  <- beta - 1
         beta0.old <- beta0 - 1
         comp.set <- seq(p)
@@ -322,18 +322,20 @@ fit.saenet.gaussian <- function(X, Y, n, p, m, weights, nlambda, lambda, alpha,
         coef[-1] <- beta / sd
 
         mse <- m * mean((Y - X %*% beta - beta0) ^ 2 * weights)
-        list(coef = coef, mse = mse)
+        list(coef = coef, beta = c(beta0, beta), mse = mse)
     }
 
     df   <- matrix(0, nlambda, length(alpha))
     mse  <- matrix(0, nlambda, length(alpha))
     beta <- array(0, c(nlambda, length(alpha), p + 1))
+    
+    start = rep(0, p + 1)
     for (j in seq(length(alpha))) {
         for (i in seq(nlambda)) {
             L1 <- lambda[i] * alpha[j] * adWeight * pf
             L2 <- lambda[i] * (1 - alpha[j]) * pf
 
-            fit <- fit.model(L1, L2)
+            fit <- fit.model(L1, L2, start = start)
             beta[i, j, ] <- fit$coef
             mse[i, j]    <- fit$mse
             df[i, j]     <- sum(beta[i, j, ] != 0) - 1
