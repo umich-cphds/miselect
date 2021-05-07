@@ -15,7 +15,7 @@ cv.galasso(
   lambda = NULL,
   nfolds = 5,
   foldid = NULL,
-  maxit = 10000,
+  maxit = 1000,
   eps = 1e-05
 )
 }

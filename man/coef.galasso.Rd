@@ -15,8 +15,8 @@
 \item{...}{Additional unused arguments}
 }
 \value{
-A list of numeric vectors containing the coefficients from running
-    \code{galasso} on \code{lambda} for each imputation.
+A list of length D containing the coefficient estimates from running 
+\code{galasso} on \code{lambda}.
 }
 \description{
 Extract Coefficients From a 'galasso' Object

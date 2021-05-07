@@ -57,19 +57,7 @@ of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
 \item{eps}{Tolerance for convergence. Default is 1e-5}
 }
 \value{
-An object with type "saenet" and subtype
-"saenet.gaussian" or saenet.binomial", depending on which family was used.
-Both subtypes have 4 elements:
-\describe{
-\item{lambda}{Sequence of lambda fit.}
-\item{beta}{nlambda x nalpha x p + 1 tensor representing the estimated betas
-            at each value of lambda and alpha.}
-\item{df}{Number of nonzero betas at each value of lambda and alpha.}
-\item{mse}{For objects with subtype "saenet.gaussian", the training MSE for
-           each value of lambda and alpha.}
-\item{dev}{For objects with subtype "saenet.binomial", the training deviance
-           for each value of lambda and alpha.}
-}
+
 }
 \description{
 Fits an adaptive elastic net for multiply imputed data. The data is stacked

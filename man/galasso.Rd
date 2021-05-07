@@ -49,19 +49,7 @@ of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
 \item{eps}{Tolerance for convergence. Default is 1e-5}
 }
 \value{
-An object with type "galasso" and subtype
-"galasso.gaussian" or galasso.binomial", depending on which family was used.
-Both subtypes have 4 elements:
-\describe{
-\item{lambda}{Sequence of lambda fit.}
-\item{beta}{list of length # of imputations of (nlambda x (p + 1)) matrices representing the estimated betas at
-            each value of lambda.}
-\item{df}{Number of nonzero betas at each value of lambda.}
-\item{mse}{For objects with subtype "galasso.gaussian", the training MSE for
-           each value of lambda.}
-\item{dev}{For objects with subtype "galasso.binomial", the training deviance
-           for each value of lambda.}
-}
+
 }
 \description{
 \code{galasso} fits an adaptive LASSO for multiply imputed data. "galasso"
