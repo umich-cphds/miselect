@@ -188,7 +188,7 @@ cv.saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binom
   cvm  <- apply(cvm, c(1, 2), mean)
   
   min.id = which(cvm == min(cvm), arr.ind = TRUE)
-  se = cvse[min.id[1], min.id[2]]
+  se = cvse[min.id[1, 1], min.id[1, 2]]
   range = min(cvm) + se
   
   all.id = which(cvm < range, arr.ind = TRUE)
