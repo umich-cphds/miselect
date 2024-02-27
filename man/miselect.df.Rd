@@ -3,7 +3,7 @@
 \docType{data}
 \name{miselect.df}
 \alias{miselect.df}
-\title{Synthetic Example Data For 'miselect'}
+\title{Synthetic Example Data For "miselect"}
 \format{
 A data.frame with 500 observations on 21 variables:
 \describe{

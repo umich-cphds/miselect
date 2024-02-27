@@ -35,12 +35,12 @@ for the L1 penalty}
 \item{family}{The type of response. "gaussian" implies a continuous response
 and "binomial" implies a binary response. Default is "gaussian".}
 
-\item{nlambda}{Length of automatically generated 'lambda' sequence. If
-lambda' is non NULL, 'nlambda' is ignored. Default is 100}
+\item{nlambda}{Length of automatically generated "lambda" sequence. If
+"lambda" is non NULL, "nlambda" is ignored. Default is 100}
 
-\item{lambda.min.ratio}{Ratio that determines the minimum value of 'lambda'
-when automatically generating a 'lambda' sequence. If 'lambda' is not
-NULL, 'lambda.min.ratio' is ignored. Default is 1e-4}
+\item{lambda.min.ratio}{Ratio that determines the minimum value of "lambda"
+when automatically generating a "lambda" sequence. If "lambda" is not
+NULL, "lambda.min.ratio" is ignored. Default is 1e-4}
 
 \item{lambda}{Optional numeric vector of lambdas to fit. If NULL,
 \code{galasso} will automatically generate a lambda sequence based off
@@ -61,11 +61,11 @@ An object of type "cv.galasso" with 7 elements:
 \describe{
 \item{call}{The call that generated the output.}
 \item{lambda}{The sequence of lambdas fit.}
-\item{cvm}{Average cross validation error for each 'lambda'. For
-           family = "gaussian", 'cvm' corresponds to mean squared error,
-           and for binomial 'cvm' corresponds to deviance.}
-\item{cvse}{Standard error of 'cvm'.}
-\item{galasso.fit}{A 'galasso' object fit to the full data.}
+\item{cvm}{Average cross validation error for each "lambda". For
+           family = "gaussian", "cvm" corresponds to mean squared error,
+           and for binomial "cvm" corresponds to deviance.}
+\item{cvse}{Standard error of "cvm".}
+\item{galasso.fit}{A "galasso" object fit to the full data.}
 \item{lambda.min}{The lambda value for the model with the minimum cross
                   validation error.}
 \item{lambda.1se}{The lambda value for the  sparsest model within one
@@ -113,8 +113,8 @@ coef(fit)
 }
 }
 \references{
-Variable selection with multiply-imputed datasets: choosing between stacked
-and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
-Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
-arXiv:2003.07398
+Du, J., Boss, J., Han, P., Beesley, L. J., Kleinsasser, M., Goutman, S. A., ... 
+& Mukherjee, B. (2022). Variable selection with multiply-imputed datasets: 
+choosing between stacked and grouped methods. Journal of Computational and 
+Graphical Statistics, 31(4), 1063-1075. <doi:10.1080/10618600.2022.2035739>
 }

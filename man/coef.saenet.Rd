@@ -2,18 +2,18 @@
 % Please edit documentation in R/coef.R
 \name{coef.saenet}
 \alias{coef.saenet}
-\title{Extract Coefficients From a 'saenet' Object}
+\title{Extract Coefficients From a "saenet" Object}
 \usage{
 \method{coef}{saenet}(object, lambda, alpha, ...)
 }
 \arguments{
-\item{object}{A 'cv.saenet' fit}
+\item{object}{A "cv.saenet" fit}
 
-\item{lambda}{Chosen value of lambda. Must be between 'min(lambda)' and
-'max(lambda)'. Default is 'lambda.min'}
+\item{lambda}{Chosen value of lambda. Must be between "min(lambda)" and
+"max(lambda)". Default is "lambda.min"}
 
-\item{alpha}{Chosen value of alpha. Must be between 'min(alpha)' and
-'max(alpha)'. Default is 'alpha.min'}
+\item{alpha}{Chosen value of alpha. Must be between "min(alpha)" and
+"max(alpha)". Default is "alpha.min"}
 
 \item{...}{Additional unused arguments}
 }

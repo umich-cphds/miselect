@@ -41,12 +41,12 @@ and "binomial" implies a binary response. Default is "gaussian".}
 \item{alpha}{Elastic net parameter. Can be a vector to cross validate over.
 Default is 1}
 
-\item{nlambda}{Length of automatically generated 'lambda' sequence. If
-lambda' is non NULL, 'nlambda' is ignored. Default is 100}
+\item{nlambda}{Length of automatically generated "lambda" sequence. If
+"lambda" is non NULL, "nlambda" is ignored. Default is 100}
 
-\item{lambda.min.ratio}{Ratio that determines the minimum value of 'lambda'
-when automatically generating a 'lambda' sequence. If 'lambda' is not
-NULL, 'lambda.min.ratio' is ignored. Default is 1e-3}
+\item{lambda.min.ratio}{Ratio that determines the minimum value of "lambda"
+when automatically generating a "lambda" sequence. If "lambda" is not
+NULL, "lambda.min.ratio" is ignored. Default is 1e-3}
 
 \item{lambda}{Optional numeric vector of lambdas to fit. If NULL,
 \code{galasso} will automatically generate a lambda sequence based off
@@ -57,7 +57,15 @@ of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
 \item{eps}{Tolerance for convergence. Default is 1e-5}
 }
 \value{
-
+An object with type saenet and subtype
+ saenet.gaussian or saenet.binomial, depending on which family was used.
+Both subtypes have 4 elements:
+\describe{
+\item{lambda}{Sequence of lambda fit.}
+\item{coef}{nlambda x nalpha x p + 1 tensor representing the estimated betas
+            at each value of lambda and alpha.}
+\item{df}{Number of nonzero betas at each value of lambda and alpha.}
+}
 }
 \description{
 Fits an adaptive elastic net for multiply imputed data. The data is stacked
@@ -104,8 +112,8 @@ fit <- saenet(x, y, pf, adWeight, weights, family = "binomial")
 }
 }
 \references{
-Variable selection with multiply-imputed datasets: choosing between stacked
-and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
-Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
-arXiv:2003.07398
+Du, J., Boss, J., Han, P., Beesley, L. J., Kleinsasser, M., Goutman, S. A., ... 
+& Mukherjee, B. (2022). Variable selection with multiply-imputed datasets: 
+choosing between stacked and grouped methods. Journal of Computational and 
+Graphical Statistics, 31(4), 1063-1075. <doi:10.1080/10618600.2022.2035739>
 }

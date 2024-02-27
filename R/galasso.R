@@ -28,16 +28,15 @@
 #' @param lambda Optional numeric vector of lambdas to fit. If NULL,
 #'    \code{galasso} will automatically generate a lambda sequence based off
 #'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
-#' @param nlambda Length of automatically generated 'lambda' sequence. If
-#'     lambda' is non NULL, 'nlambda' is ignored. Default is 100
-#' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
-#'     when automatically generating a 'lambda' sequence. If 'lambda' is not
-#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-4
+#' @param nlambda Length of automatically generated "lambda" sequence. If
+#'     "lambda" is non NULL, "nlambda" is ignored. Default is 100
+#' @param lambda.min.ratio Ratio that determines the minimum value of "lambda"
+#'     when automatically generating a "lambda" sequence. If "lambda" is not
+#'     NULL, "lambda.min.ratio" is ignored. Default is 1e-4
 #' @param maxit Maximum number of iterations to run. Default is 10000
 #' @param eps Tolerance for convergence. Default is 1e-5
-#' @return
-#' An object with type "galasso" and subtype
-#' "galasso.gaussian" or galasso.binomial", depending on which family was used.
+#' @returns An object with type galasso and subtype
+#'  galasso.gaussian or galasso.binomial, depending on which family was used.
 #' Both subtypes have 4 elements:
 #' \describe{
 #' \item{lambda}{Sequence of lambda fit.}
@@ -45,6 +44,7 @@
 #' \item{coef}{a list of length D containing the coefficient estimates from running 
 #' galasso at each value of lambda. Each element in the list is a nlambda x (p+1) matrix.}
 #' \item{df}{Number of nonzero betas at each value of lambda.}
+#' }
 #' @examples
 #' \donttest{
 #' library(miselect)
@@ -67,10 +67,11 @@
 #' fit <- galasso(x, y, pf, adWeight)
 #' }
 #' @references
-#' Variable selection with multiply-imputed datasets: choosing between stacked
-#' and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
-#' Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
-#' arXiv:2003.07398
+#' Du, J., Boss, J., Han, P., Beesley, L. J., Kleinsasser, M., Goutman, S. A., ... 
+#' & Mukherjee, B. (2022). Variable selection with multiply-imputed datasets: 
+#' choosing between stacked and grouped methods. Journal of Computational and 
+#' Graphical Statistics, 31(4), 1063-1075. <doi:10.1080/10618600.2022.2035739>
+#' 
 #' @export
 galasso <- function(x, y, pf, adWeight, family = c("gaussian", "binomial"),
                     nlambda = 100, lambda.min.ratio =

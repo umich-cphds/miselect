@@ -2,15 +2,15 @@
 % Please edit documentation in R/coef.R
 \name{coef.galasso}
 \alias{coef.galasso}
-\title{Extract Coefficients From a 'galasso' Object}
+\title{Extract Coefficients From a "galasso" Object}
 \usage{
 \method{coef}{galasso}(object, lambda, ...)
 }
 \arguments{
-\item{object}{A 'galasso' fit}
+\item{object}{A "galasso" fit}
 
-\item{lambda}{Chosen value of lambda. Must be between 'min(lambda)' and
-'max(lambda)'. Default is 'lambda.min'}
+\item{lambda}{Chosen value of lambda. Must be between "min(lambda)" and
+"max(lambda)". Default is "lambda.min"}
 
 \item{...}{Additional unused arguments}
 }
@@ -19,5 +19,5 @@ A list of length D containing the coefficient estimates from running
 \code{galasso} on \code{lambda}.
 }
 \description{
-Extract Coefficients From a 'galasso' Object
+Extract Coefficients From a "galasso" Object
 }

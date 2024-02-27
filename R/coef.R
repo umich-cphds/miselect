@@ -1,17 +1,17 @@
-#' Extract Coefficients From a 'cv.saenet' Object
-#' @param object A 'cv.saenet' fit
-#' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
-#'     'max(lambda)'. Default is 'lambda.min'
-#' @param alpha Chosen value of alpha. Must be between 'min(alpha)' and
-#'     'max(alpha)'. Default is 'alpha.min'
+#' Extract Coefficients From a "cv.saenet" Object
+#' @param object A "cv.saenet" fit
+#' @param lambda Chosen value of lambda. Must be between "min(lambda)" and
+#'     "max(lambda)". Default is "lambda.min"
+#' @param alpha Chosen value of alpha. Must be between "min(alpha)" and
+#'     "max(alpha)". Default is "alpha.min"
 #' @param ... Additional unused arguments
-#' @return A numeric vector containing the coefficients from running
+#' @returns A numeric vector containing the coefficients from running
 #'     \code{saenet} on \code{lambda} and \code{alpha}.
 #' @export
 coef.cv.saenet <- function(object, lambda = object$lambda.min,
                            alpha = object$alpha.min, ...)
 {
-  if (class(object) != "cv.saenet")
+  if (!inherits(object, "cv.saenet"))
     stop("'object' must have class 'cv.saenet'.")
   
   if (lambda < min(object$lambda) || lambda > max(object$lambda))
@@ -38,22 +38,22 @@ coef.cv.saenet <- function(object, lambda = object$lambda.min,
   apply(object$saenet.fit$coef, 3, function(x) sum(w * x))
 }
 
-#' Extract Coefficients From a 'saenet' Object
+#' Extract Coefficients From a "saenet" Object
 #'
 #' \code{coef.galasso} averages the estimates across imputations to return a
 #' single vector instead of a matrix.
-#' @param object A 'cv.saenet' fit
-#' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
-#'     'max(lambda)'. Default is 'lambda.min'
-#' @param alpha Chosen value of alpha. Must be between 'min(alpha)' and
-#'     'max(alpha)'. Default is 'alpha.min'
+#' @param object A "cv.saenet" fit
+#' @param lambda Chosen value of lambda. Must be between "min(lambda)" and
+#'     "max(lambda)". Default is "lambda.min"
+#' @param alpha Chosen value of alpha. Must be between "min(alpha)" and
+#'     "max(alpha)". Default is "alpha.min"
 #' @param ... Additional unused arguments
-#' @return A numeric vector containing the coefficients from running
+#' @returns A numeric vector containing the coefficients from running
 #'     \code{saenet} on \code{lambda} and \code{alpha}.
 #' @export
 coef.saenet <- function(object, lambda, alpha, ...)
 {
-  if (!("saenet" %in% class(object)))
+  if (!inherits(object, "saenet"))
     stop("'object' must have class 'saenet'.")
   
   if (lambda < min(object$lambda) || lambda > max(object$lambda))
@@ -80,17 +80,17 @@ coef.saenet <- function(object, lambda, alpha, ...)
   apply(object$coef, 3, function(x) sum(w * x))
 }
 
-#' Extract Coefficients From a 'cv.galasso' Object
-#' @param object A 'cv.galasso' fit
-#' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
-#'     'max(lambda)'. Default is 'lambda.min'
+#' Extract Coefficients From a "cv.galasso" Object
+#' @param object A "cv.galasso" fit
+#' @param lambda Chosen value of lambda. Must be between "min(lambda)" and
+#'     "max(lambda)". Default is "lambda.min"
 #' @param ... Additional unused arguments
-#' @return A list of numeric vectors containing the coefficients from running
+#' @returns A list of numeric vectors containing the coefficients from running
 #'     \code{galasso} on \code{lambda} for each imputation.
 #' @export
 coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
 {
-  if (class(object) != "cv.galasso")
+  if (!inherits(object, "cv.galasso"))
     stop("'object' must have class 'cv.galasso'.")
   
   if (lambda < min(object$lambda) || lambda > max(object$lambda))
@@ -108,17 +108,17 @@ coef.cv.galasso <- function(object, lambda = object$lambda.min, ...)
     apply(dat, 2, function(x) sum(w * x))})
 }
 
-#' Extract Coefficients From a 'galasso' Object
-#' @param object A 'galasso' fit
-#' @param lambda Chosen value of lambda. Must be between 'min(lambda)' and
-#'     'max(lambda)'. Default is 'lambda.min'
+#' Extract Coefficients From a "galasso" Object
+#' @param object A "galasso" fit
+#' @param lambda Chosen value of lambda. Must be between "min(lambda)" and
+#'     "max(lambda)". Default is "lambda.min"
 #' @param ... Additional unused arguments
-#' @return A list of length D containing the coefficient estimates from running 
+#' @returns A list of length D containing the coefficient estimates from running 
 #' \code{galasso} on \code{lambda}.
 #' @export
 coef.galasso <- function(object, lambda, ...)
 {
-  if (!("galasso" %in% class(object)))
+  if (!inherits(object, "galasso"))
     stop("'object' must have class 'galasso'.")
   
   if (lambda < min(object$lambda) || lambda > max(object$lambda))

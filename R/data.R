@@ -1,4 +1,4 @@
-#' Synthetic Example Data For 'miselect'
+#' Synthetic Example Data For "miselect"
 #'
 #' This synthetic data is taken from the first simulation case from the miselect
 #' paper

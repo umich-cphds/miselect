@@ -26,30 +26,30 @@
 #'     and "binomial" implies a binary response. Default is "gaussian".
 #' @param alpha Elastic net parameter. Can be a vector to cross validate over.
 #'     Default is 1
-#' @param nlambda Length of automatically generated 'lambda' sequence. If
-#'     lambda' is non NULL, 'nlambda' is ignored. Default is 100
-#' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
-#'     when automatically generating a 'lambda' sequence. If 'lambda' is not
-#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
+#' @param nlambda Length of automatically generated "lambda" sequence. If
+#'     "lambda" is non NULL, "nlambda" is ignored. Default is 100
+#' @param lambda.min.ratio Ratio that determines the minimum value of "lambda"
+#'     when automatically generating a "lambda" sequence. If "lambda" is not
+#'     NULL, "lambda.min.ratio" is ignored. Default is 1e-3
 #' @param lambda Optional numeric vector of lambdas to fit. If NULL,
 #'    \code{galasso} will automatically generate a lambda sequence based off
 #'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
 #' @param nfolds Number of foldid to use for cross validation. Default is 5,
 #'     minimum is 3
 #' @param foldid an optional length \code{n} vector of values between 1 and
-#     'nfold' identifying what fold each observation is in. Default is NULL and
+#     "nfold" identifying what fold each observation is in. Default is NULL and
 #'     \code{cv.galasso} will automatically generate folds
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
-#' @return An object of type "cv.saenet" with 9 elements:
+#' @returns An object of type "cv.saenet" with 9 elements:
 #' \describe{
 #' \item{call}{The call that generated the output.}
 #' \item{lambda}{Sequence of lambdas fit.}
 #' \item{cvm}{Average cross validation error for each lambda and alpha. For
-#'            family = "gaussian", 'cvm' corresponds to mean squared error,
-#'            and for binomial 'cvm' corresponds to deviance.}
-#' \item{cvse}{Standard error of 'cvm'.}
-#' \item{saenet.fit}{A 'saenet' object fit to the full data.}
+#'            family = "gaussian", "cvm" corresponds to mean squared error,
+#'            and for binomial "cvm" corresponds to deviance.}
+#' \item{cvse}{Standard error of "cvm".}
+#' \item{saenet.fit}{A "saenet" object fit to the full data.}
 #' \item{lambda.min}{The lambda value for the model with the minimum cross
 #'                   validation error.}
 #' \item{lambda.1se}{The lambda value for the  sparsest model within one
@@ -58,14 +58,14 @@
 #'                   validation error.}
 #' \item{alpha.1se}{The alpha value for the  sparsest model within one
 #'                   standard error of the minimum cross validation error.}
-
 #' \item{df}{The number of nonzero coefficients for each value of lambda and alpha.}
 #' }
 #' @references
-#' Variable selection with multiply-imputed datasets: choosing between stacked
-#' and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
-#' Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
-#' arXiv:2003.07398
+#' Du, J., Boss, J., Han, P., Beesley, L. J., Kleinsasser, M., Goutman, S. A., ... 
+#' & Mukherjee, B. (2022). Variable selection with multiply-imputed datasets: 
+#' choosing between stacked and grouped methods. Journal of Computational and 
+#' Graphical Statistics, 31(4), 1063-1075. <doi:10.1080/10618600.2022.2035739>
+#' 
 #' @examples
 #' \donttest{
 #' library(miselect)

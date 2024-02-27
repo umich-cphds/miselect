@@ -33,12 +33,12 @@ for the L1 penalty}
 \item{family}{The type of response. "gaussian" implies a continuous response
 and "binomial" implies a binary response. Default is "gaussian".}
 
-\item{nlambda}{Length of automatically generated 'lambda' sequence. If
-lambda' is non NULL, 'nlambda' is ignored. Default is 100}
+\item{nlambda}{Length of automatically generated "lambda" sequence. If
+"lambda" is non NULL, "nlambda" is ignored. Default is 100}
 
-\item{lambda.min.ratio}{Ratio that determines the minimum value of 'lambda'
-when automatically generating a 'lambda' sequence. If 'lambda' is not
-NULL, 'lambda.min.ratio' is ignored. Default is 1e-4}
+\item{lambda.min.ratio}{Ratio that determines the minimum value of "lambda"
+when automatically generating a "lambda" sequence. If "lambda" is not
+NULL, "lambda.min.ratio" is ignored. Default is 1e-4}
 
 \item{lambda}{Optional numeric vector of lambdas to fit. If NULL,
 \code{galasso} will automatically generate a lambda sequence based off
@@ -49,7 +49,16 @@ of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
 \item{eps}{Tolerance for convergence. Default is 1e-5}
 }
 \value{
+An object with type galasso and subtype
+ galasso.gaussian or galasso.binomial, depending on which family was used.
+Both subtypes have 4 elements:
+\describe{
+\item{lambda}{Sequence of lambda fit.}
 
+\item{coef}{a list of length D containing the coefficient estimates from running 
+galasso at each value of lambda. Each element in the list is a nlambda x (p+1) matrix.}
+\item{df}{Number of nonzero betas at each value of lambda.}
+}
 }
 \description{
 \code{galasso} fits an adaptive LASSO for multiply imputed data. "galasso"
@@ -92,8 +101,8 @@ fit <- galasso(x, y, pf, adWeight)
 }
 }
 \references{
-Variable selection with multiply-imputed datasets: choosing between stacked
-and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
-Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
-arXiv:2003.07398
+Du, J., Boss, J., Han, P., Beesley, L. J., Kleinsasser, M., Goutman, S. A., ... 
+& Mukherjee, B. (2022). Variable selection with multiply-imputed datasets: 
+choosing between stacked and grouped methods. Journal of Computational and 
+Graphical Statistics, 31(4), 1063-1075. <doi:10.1080/10618600.2022.2035739>
 }

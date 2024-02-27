@@ -33,22 +33,22 @@
 #' @param lambda Optional numeric vector of lambdas to fit. If NULL,
 #'    \code{galasso} will automatically generate a lambda sequence based off
 #'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
-#' @param nlambda Length of automatically generated 'lambda' sequence. If
-#'     lambda' is non NULL, 'nlambda' is ignored. Default is 100
-#' @param lambda.min.ratio Ratio that determines the minimum value of 'lambda'
-#'     when automatically generating a 'lambda' sequence. If 'lambda' is not
-#'     NULL, 'lambda.min.ratio' is ignored. Default is 1e-3
+#' @param nlambda Length of automatically generated "lambda" sequence. If
+#'     "lambda" is non NULL, "nlambda" is ignored. Default is 100
+#' @param lambda.min.ratio Ratio that determines the minimum value of "lambda"
+#'     when automatically generating a "lambda" sequence. If "lambda" is not
+#'     NULL, "lambda.min.ratio" is ignored. Default is 1e-3
 #' @param maxit Maximum number of iterations to run. Default is 1000
 #' @param eps Tolerance for convergence. Default is 1e-5
-#' @return
-#' An object with type "saenet" and subtype
-#' "saenet.gaussian" or saenet.binomial", depending on which family was used.
+#' @returns An object with type saenet and subtype
+#'  saenet.gaussian or saenet.binomial, depending on which family was used.
 #' Both subtypes have 4 elements:
 #' \describe{
 #' \item{lambda}{Sequence of lambda fit.}
 #' \item{coef}{nlambda x nalpha x p + 1 tensor representing the estimated betas
 #'             at each value of lambda and alpha.}
 #' \item{df}{Number of nonzero betas at each value of lambda and alpha.}
+#' }
 #' @examples
 #' \donttest{
 #' library(miselect)
@@ -74,10 +74,11 @@
 #' fit <- saenet(x, y, pf, adWeight, weights, family = "binomial")
 #' }
 #' @references
-#' Variable selection with multiply-imputed datasets: choosing between stacked
-#' and grouped methods. Jiacong Du, Jonathan Boss, Peisong Han, Lauren J Beesley,
-#' Stephen A Goutman, Stuart Batterman, Eva L Feldman, and Bhramar Mukherjee. 2020.
-#' arXiv:2003.07398
+#' Du, J., Boss, J., Han, P., Beesley, L. J., Kleinsasser, M., Goutman, S. A., ... 
+#' & Mukherjee, B. (2022). Variable selection with multiply-imputed datasets: 
+#' choosing between stacked and grouped methods. Journal of Computational and 
+#' Graphical Statistics, 31(4), 1063-1075. <doi:10.1080/10618600.2022.2035739>
+#' 
 #' @export
 saenet <- function(x, y, pf, adWeight, weights, family = c("gaussian", "binomial"),
                    alpha = 1, nlambda = 100, lambda.min.ratio =
