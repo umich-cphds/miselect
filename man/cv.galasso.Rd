@@ -44,7 +44,7 @@ NULL, "lambda.min.ratio" is ignored. Default is 1e-4}
 
 \item{lambda}{Optional numeric vector of lambdas to fit. If NULL,
 \code{galasso} will automatically generate a lambda sequence based off
-of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
+of \code{nlambda} and \code{lambda.min.ratio}. Default is NULL}
 
 \item{nfolds}{Number of foldid to use for cross validation. Default is 5,
 minimum is 3}
