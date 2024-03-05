@@ -32,7 +32,7 @@
 #'     Default is 1
 #' @param lambda Optional numeric vector of lambdas to fit. If NULL,
 #'    \code{galasso} will automatically generate a lambda sequence based off
-#'    of \code{nlambda} and code{lambda.min.ratio}. Default is NULL
+#'    of \code{nlambda} and \code{lambda.min.ratio}. Default is NULL
 #' @param nlambda Length of automatically generated "lambda" sequence. If
 #'     "lambda" is non NULL, "nlambda" is ignored. Default is 100
 #' @param lambda.min.ratio Ratio that determines the minimum value of "lambda"

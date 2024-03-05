@@ -50,7 +50,7 @@ NULL, "lambda.min.ratio" is ignored. Default is 1e-3}
 
 \item{lambda}{Optional numeric vector of lambdas to fit. If NULL,
 \code{galasso} will automatically generate a lambda sequence based off
-of \code{nlambda} and code{lambda.min.ratio}. Default is NULL}
+of \code{nlambda} and \code{lambda.min.ratio}. Default is NULL}
 
 \item{maxit}{Maximum number of iterations to run. Default is 1000}
 
